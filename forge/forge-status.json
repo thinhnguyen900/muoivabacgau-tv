@@ -1,0 +1,24 @@
+{
+  "build": "forge-1",
+  "reviewable": false,
+  "completed_gates": {
+    "brain_simulation": {"total": 300, "passed": 300, "failed": 0},
+    "audio_files": {
+      "count": 6,
+      "durations_positive": true,
+      "durations_seconds": {"english": 5.736, "home": 5.712, "listen": 2.760, "sad": 5.232, "think": 3.624, "vi_test": 3.816}
+    },
+    "brain_body_mapping": ["welcoming", "listening", "thinking", "gentle", "playful"],
+    "safety_parent_guidance": true
+  },
+  "blocked_gates": {
+    "chromium_render": "Container Chromium blocks local/data URL navigation with ERR_BLOCKED_BY_ADMINISTRATOR; this is explicitly not counted as a product pass.",
+    "review_promotion": "Not promoted because the visual layer is still a 2D performance compositor and browser render could not be independently verified in this runtime."
+  },
+  "red_team_findings_fixed": [
+    "English detector misclassified Tell me more and I feel lonely as Vietnamese.",
+    "Vietnamese profanity regex used ASCII word-boundary behavior and missed đm.",
+    "English curiosity failed to produce THINKING performance."
+  ],
+  "next_priority": "Add reproducible remote browser CI or Vercel-preview gate, persist optimized assets, then move Body from pose compositor toward a rig/animation-ready character while retaining deterministic voice and the cumulative regression corpus."
+}
