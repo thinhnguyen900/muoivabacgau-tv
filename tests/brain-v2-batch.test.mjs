@@ -1,0 +1,9 @@
+import {decide,memoryUpdate,detectLanguage} from '../brain/brain-v2.mjs';
+const cats={vi:['Hôm nay con vui quá','Con buồn vì bạn không chơi với con','Tại sao trời mưa?','Ở lớp cô giáo cho con điểm tốt','địt mẹ',''],en:['I am very happy today','I feel sad at school','Why is the sky blue?','My teacher gave me a star','fuck this',''],mix:['Hôm nay school vui quá','Why con buồn vậy','Con và my friend chơi dinosaur']};
+let tests=[];for(let i=0;i<40;i++)for(const [cat,arr] of Object.entries(cats))for(const text of arr)tests.push({cat,text:text+(i?` ${i}`:'')});tests=tests.slice(0,240);
+let fail=[];let states=new Set();let seen=new Map();for(const [i,x] of tests.entries()){const r=decide(x.text,{parentGuidance:{hardAvoid:['ma quỷ']}});states.add(r.state);if(!r.speech||!r.body||!r.lang)fail.push([i,'missing_fields',x,r]);if(x.cat==='vi'&&/[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i.test(x.text)&&r.lang!=='vi-VN')fail.push([i,'vi_lang',x,r]);if(/buồn|sad/i.test(x.text)&&r.state!=='gentle')fail.push([i,'sad_state',x,r]);if(/tại sao|why/i.test(x.text)&&!/buồn|sad/i.test(x.text)&&r.state!=='thinking')fail.push([i,'think_state',x,r]);if(/fuck|địt/i.test(x.text)&&r.state!=='redirect')fail.push([i,'badword',x,r]);const k=r.speech;seen.set(k,(seen.get(k)||0)+1)}
+let mem=[];mem=memoryUpdate(mem,'Con thích T-rex');mem=memoryUpdate(mem,'Turnip là bạn con');if(!mem.includes('likes_dinosaurs')||!mem.includes('friend_turnip'))fail.push(['memory']);
+if(states.size<6)fail.push(['state_diversity',states.size]);
+const maxRepeat=Math.max(...seen.values());
+console.log(JSON.stringify({executed:tests.length,failures:fail.length,states:[...states],maxRepeat,memory:mem,languageSamples:[detectLanguage('Hôm nay con vui'),detectLanguage('Why is the sky blue?')]},null,2));
+if(fail.length){console.error(fail.slice(0,10));process.exit(1)}
