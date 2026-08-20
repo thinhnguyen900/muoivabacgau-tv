@@ -1,11 +1,11 @@
 {
-  "build": "forge-2",
+  "build": "forge-3",
   "reviewable": false,
   "completed_gates": {
     "brain_simulation": {
-      "this_run": {"executions": 503, "passed": 503, "failed": 0, "distinct_assertion_templates": 43},
-      "cumulative_executions": 803,
-      "cumulative_note": "Execution count is tracked separately from distinct templates; repeated regression stress is not represented as unique scenarios."
+      "this_run": {"executions": 550, "passed": 550, "failed": 0, "distinct_categories": 21},
+      "cumulative_executions": 1353,
+      "cumulative_note": "Execution count remains separate from distinct scenario/category count; repeated stress is not represented as unique evidence."
     },
     "audio_files": {
       "count": 6,
@@ -16,18 +16,20 @@
     "safety_parent_guidance": true,
     "memory_continuity": true,
     "reply_variety": true,
-    "nonsense_redirect": true
+    "nonsense_redirect": true,
+    "self_harm_escalation": true,
+    "parent_safety_override_guard": true
   },
   "blocked_gates": {
-    "chromium_render": "Headless Chromium was retried through a local HTTP server with the supplied Bác Gấu visual assets. Chromium initialized but hung and produced no screenshot before timeout; this remains explicitly unpassed.",
-    "review_promotion": "Not promoted. Body is still a 2D performance compositor and browser visual verification remains unavailable in this runtime."
+    "chromium_render": "Headless Chromium in the current container still hangs before producing a screenshot, including on a trivial data URL; browser visual verification remains explicitly unpassed.",
+    "voice_quality": "Deterministic bundled audio exists and has positive duration, but the current review voice path has not yet met the warm natural adult-male quality bar for production dynamic speech.",
+    "review_promotion": "Not promoted. Browser visual verification and production-quality dynamic voice are still below the review gate; Body remains a 2D/2.5D performance compositor rather than a production 3D rig."
   },
   "red_team_findings_fixed": [
-    "Conversation had no topic memory, so 'kể tiếp' could lose the subject.",
-    "Generic listening replies could repeat immediately and feel robotic.",
-    "Nonsense/play-noise fell into generic listening instead of a playful safe redirect.",
-    "Language state could fall back incorrectly after silence or continuation.",
-    "Soft Parent Guidance had validation but no explicit safe storage path."
+    "Critical gap: explicit Vietnamese/English self-harm phrases previously fell through to ordinary sadness/listening.",
+    "English danger phrases such as 'I want to die' could inherit the previous Vietnamese language state.",
+    "Parent Guidance could be stored without a guard against instructions that attempted to suppress safety alerts.",
+    "Weapon + harm combinations now route to the safety state and parent-alert intent."
   ],
-  "next_priority": "Increase distinct regression templates, exercise interruption/mixed-language/parent-conflict cases, and keep Body work focused on a rig/animation-ready character. Do not publish a review URL until a browser-render gate and deterministic dynamic voice path both pass."
+  "next_priority": "Keep the cumulative corpus above 1000 while adding more distinct interruption/mixed-language templates; solve remote browser render verification; replace placeholder/deterministic voice with a proper natural dynamic TTS path; continue toward rig/animation-ready Body without presenting static poses as final animation."
 }
