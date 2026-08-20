@@ -1,25 +1,27 @@
 {
-  "build": "forge-5",
+  "build": "forge-6",
   "reviewable": false,
   "completed_gates": {
     "brain_simulation": {
-      "latest_completed_conversation_batch": {"executions": 550, "passed": 550, "failed": 0, "distinct_categories": 21},
-      "cumulative_executions": 1903,
-      "cumulative_note": "Conversation execution count is kept separate from liveness stress tests; repeated stress is not represented as unique evidence."
+      "latest_completed_production_conversation_batch": {"executions": 550, "passed": 550, "failed": 0, "distinct_categories": 21},
+      "cumulative_production_conversation_executions": 1903,
+      "latest_shadow_batch": {"executions": 240, "passed": 240, "failed": 0, "counted_as_production_evidence": false},
+      "cumulative_note": "Shadow and liveness stress runs are kept separate from production BacGauBrain conversation evidence; repeated stress is not represented as unique production evidence."
     },
     "living_character_planner": {
       "latest_stress": {"executions": 200, "passed": 200, "failed": 0},
       "states": ["welcoming", "listening", "thinking", "gentle", "playful"],
       "outputs": ["gaze", "blinkMs", "breathScale", "head", "brow", "mouth", "gesture", "responseDelayMs", "microShiftMs", "interruptWindowMs", "speechChunkMs", "eventPolicy", "resumePolicy"],
-      "dead_character_audit": "clean",
+      "dead_character_audit": "clean at planner level",
       "interruptibility": "distress interrupts stop speech/gesture, acknowledge within <=100ms planning budget, force gentle mode, and do not auto-resume",
       "gentle_world_policy": "suppress-nonessential"
     },
     "audio_container_fixture": {
       "durations_positive": true,
-      "durations_seconds": {"vi_fixture": 3.761633, "en_fixture": 5.250612},
-      "quality_gate": "not passed; fixtures are pipeline-only"
+      "latest_probe_seconds": 3.813878,
+      "quality_gate": "not passed; fixture is pipeline-only and does not establish warm natural dynamic voice"
     },
+    "visual_asset_decode": {"asset": "home.jpg", "width": 1280, "height": 900, "decode_ok": true},
     "brain_body_mapping": ["welcoming", "listening", "thinking", "gentle", "playful"],
     "safety_parent_guidance": true,
     "memory_continuity": true,
@@ -29,17 +31,19 @@
     "parent_safety_override_guard": true
   },
   "blocked_gates": {
-    "chromium_render": "Chromium 144 is present, but the current execution container hangs during headless DBus/zygote startup; no screenshot/render assertion was produced, so visual remains explicitly unpassed.",
-    "voice_quality": "Deterministic audio fixtures decode with positive duration, but warm natural adult-male dynamic Vietnamese/English speech is not yet at review quality.",
-    "fresh_conversation_batch": "Run 05 added 200 liveness/interruption stress executions but did not claim them as child-conversation tests. A fresh 200+ actual Brain conversation batch is mandatory next.",
-    "review_promotion": "Not promoted. Browser visual verification and production-quality dynamic voice remain below the review gate; Body is still a 2D/2.5D performance architecture rather than a production 3D rig."
+    "chromium_render": "Chromium is present, but this execution environment blocks local file/http navigation and the direct headless CLI attempt did not produce a reliable render assertion. Asset decode is NOT substituted for browser visual verification.",
+    "voice_quality": "Deterministic MP3 decodes with positive duration, but warm natural adult-male dynamic Vietnamese/English speech is not yet at review quality.",
+    "fresh_production_brain_batch": "Run 06 executed 240 shadow conversation cases but deliberately does not count them as BacGauBrain evidence. A fresh 200+ batch must execute directly against forge/brain.js next.",
+    "active_runtime_liveness": "Interruption/liveness planner exists and passes stress tests, but its contract still needs explicit verification in the active compositor/runtime path.",
+    "review_promotion": "Not promoted. Browser visual verification and production-quality dynamic voice remain below the review gate; Body remains a 2D/2.5D performance architecture rather than a production 3D rig."
   },
-  "red_team_findings_fixed": [
-    "Bác Gấu now has an explicit interruption contract instead of finishing queued speech regardless of the child.",
-    "Distress/safety interruption takes priority over current performance and prevents automatic topic resume.",
-    "Gentle emotional mode suppresses nonessential living-world events, reducing inappropriate event injection during sadness.",
-    "Speech is planned in interruptible chunks rather than one monolithic robotic turn.",
-    "Previous safety, parent-guidance leakage, language routing, memory continuity and dead-character planner gates remain preserved."
+  "red_team_findings_fixed_or_guarded": [
+    "A green logic batch can no longer be treated as proof of a living character.",
+    "Asset decode is kept distinct from actual Chromium render verification.",
+    "Audio duration is kept distinct from voice-naturalness/language-quality verification.",
+    "Shadow regression results are explicitly excluded from production conversation totals.",
+    "Previous interruption, gentle-world suppression, safety, parent-guidance leakage, memory and reply-variety guards remain preserved."
   ],
-  "next_priority": "Run a fresh 200+ actual Brain conversation batch with interruption and mixed-language cases, wire the liveness interruption contract into the active compositor/runtime, solve browser visual verification, and replace placeholder audio with verified natural dynamic TTS before any parent review promotion."
+  "latest_evidence_file": "forge/test-evidence-run-06.json",
+  "next_priority": "Execute the fresh corpus directly against forge/brain.js, wire and verify interruption planning in the active runtime, solve deployed Chromium visual verification, and replace fixture audio with verified natural dynamic TTS before any parent review promotion."
 }
