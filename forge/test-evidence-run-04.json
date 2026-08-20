@@ -1,0 +1,25 @@
+{
+  "run": 4,
+  "brain_regression": {
+    "executions": 550,
+    "passed": 550,
+    "failed": 0,
+    "categories": 21,
+    "coverage": ["Vietnamese", "English", "mixed-language", "sadness", "excitement", "silence", "nonsense", "profanity", "curiosity", "memory continuity", "self-harm escalation", "weapon threat escalation", "parent guidance leakage guard", "parent safety override guard"]
+  },
+  "living_character_planner": {
+    "executions": 6,
+    "passed": 6,
+    "failed": 0,
+    "states": ["welcoming", "listening", "thinking", "gentle", "playful"],
+    "gates": ["all five performance states distinct", "blink and micro-shift present", "response timing varies", "dead-character audit clean", "gentle timing slower than listening", "thinking includes cognitive pause"]
+  },
+  "new_capability": "Deterministic liveness planner now converts Brain performance intent into gaze, blink interval, breath scale, head/brow/mouth intent, non-repeating gesture selection, response delay and micro-shift timing. This is architecture for a living rig/compositor, not a claim of final animation.",
+  "cumulative_regression_executions": 1903,
+  "promotion": "blocked",
+  "blockers": [
+    "Browser visual gate is still unpassed in the current execution environment; no review URL is promoted.",
+    "Natural dynamic Vietnamese/English adult-male TTS quality is still below target.",
+    "Body is still not a production 3D rig; current 2D/2.5D prototypes are not acceptable as final character review artifacts."
+  ]
+}
