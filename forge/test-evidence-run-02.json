@@ -1,0 +1,29 @@
+{
+  "build": "forge-2",
+  "reviewable": false,
+  "brain_regression": {
+    "executions": 503,
+    "passed": 503,
+    "failed": 0,
+    "distinct_assertion_templates": 43,
+    "categories": [
+      "vi", "en", "sad-vi", "sad-en", "safety-vi", "safety-en",
+      "silence", "curious-vi", "curious-en", "excited", "nonsense",
+      "parent-source-leak", "memory-topic", "reply-variety", "guidance-store"
+    ],
+    "cumulative_executions_in_forge": 803,
+    "note": "Cumulative count is execution count, not unique scenario count. Repeated templates are retained as regression stress, and distinct template count is tracked separately to avoid fake progress."
+  },
+  "improvements_verified": [
+    "State now remembers last topic and can continue a dinosaur/school/friends/space thread.",
+    "Recent reply memory prevents immediate identical-response repetition.",
+    "Nonsense/play-noise gets a playful redirect instead of generic listening.",
+    "English/Vietnamese language state is retained across silence and continuation.",
+    "Soft parent guidance can be stored while source-leaking guidance remains blocked."
+  ],
+  "browser_gate": {
+    "passed": false,
+    "attempt": "Local HTTP + headless Chromium with supplied Bác Gấu visual assets.",
+    "result": "Chromium initialized but hung in this runtime and was terminated by timeout; no screenshot artifact was produced. This is not counted as a visual pass."
+  }
+}
