@@ -1,0 +1,50 @@
+{
+  "run": "06",
+  "reviewable": false,
+  "executed": {
+    "shadow_conversation_regression": {
+      "executions": 240,
+      "passed": 240,
+      "failed": 0,
+      "note": "Executed in an independent Node shadow harness mirroring the current state categories; intentionally NOT counted as production BacGauBrain conversation evidence. It is used to validate the next corpus shape before running it against forge/brain.js."
+    },
+    "audio_fixture_probe": {
+      "tool": "ffprobe",
+      "container": "mp3",
+      "duration_seconds": 3.813878,
+      "duration_positive": true
+    },
+    "visual_asset_probe": {
+      "tool": "ImageMagick identify",
+      "asset": "home.jpg",
+      "width": 1280,
+      "height": 900,
+      "decode_ok": true
+    },
+    "chromium_attempt": {
+      "browser_present": true,
+      "result": "blocked",
+      "reason": "The execution environment blocks local file/http navigation and the direct headless CLI attempt hangs before a reliable render assertion. No screenshot gate is claimed."
+    }
+  },
+  "coverage": [
+    "Vietnamese sadness",
+    "Vietnamese curiosity",
+    "Vietnamese dinosaur play",
+    "school-home reconnect",
+    "bad language redirect",
+    "dangerous-topic redirect",
+    "English sadness",
+    "English curiosity",
+    "English dinosaur play",
+    "English greeting",
+    "English neutral school turn",
+    "mixed Vietnamese/English curiosity",
+    "mixed dinosaur turn"
+  ],
+  "red_team": {
+    "finding": "A green logic batch is insufficient evidence for a living-character review. Asset decode and audio duration can pass while Chromium rendering and natural dynamic voice remain unverified.",
+    "action": "Keep review promotion blocked. Do not count shadow regression as production Brain evidence."
+  },
+  "next": "Run the fresh corpus directly against forge/brain.js, wire interruption planning into the active runtime, and obtain a real deployed Chromium visual assertion before promotion."
+}
