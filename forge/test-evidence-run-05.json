@@ -1,0 +1,42 @@
+{
+  "run": 5,
+  "promotion": "blocked",
+  "new_capability": "Liveness planner is now explicitly interruptible: every performance state has bounded interrupt windows and speech chunking; distress interrupts force gentle mode, stop queued speech/gesture, and suppress automatic resume. Gentle mode suppresses nonessential world events.",
+  "liveness_interrupt_stress": {
+    "executions": 200,
+    "passed": 200,
+    "failed": 0,
+    "states": ["welcoming", "listening", "thinking", "gentle", "playful"],
+    "unique_response_timings": 172,
+    "unique_blink_timings": 196,
+    "event_policies": ["normal", "quiet", "suppress-nonessential"],
+    "dead_character_audit": "clean",
+    "distress_interrupt": {
+      "max_acknowledge_ms": 100,
+      "next_performance": "gentle",
+      "resume_policy": "do-not-auto-resume"
+    }
+  },
+  "brain_regression_cumulative": {
+    "executions_before_this_run": 1903,
+    "note": "No new brain-conversation batch is claimed in run 05; this run's 200 executions are liveness/interruption stress tests, kept separate to avoid inflating conversation counts."
+  },
+  "runtime_gate_attempt": {
+    "chromium_version": "144.0.7559.96",
+    "result": "blocked-by-execution-container",
+    "detail": "Headless Chromium was invoked against a self-contained visual fixture, but the local execution container hung in DBus/zygote startup and produced no screenshot. This is not counted as a visual PASS."
+  },
+  "audio_fixture": {
+    "vi_duration_seconds": 3.761633,
+    "en_duration_seconds": 5.250612,
+    "container_decode": "ffprobe positive duration",
+    "quality": "placeholder only; not review voice"
+  },
+  "blockers": [
+    "Chromium/Edge visual gate still lacks a successful screenshot/render assertion.",
+    "Natural dynamic warm adult-male Vietnamese/English TTS remains below review quality.",
+    "Body remains a 2D/2.5D performance architecture rather than a production 3D rig.",
+    "Run 05 did not add a new 200+ brain conversation batch; next run must do so before any promotion."
+  ],
+  "next": "Run a fresh 200+ actual brain conversation batch with interruption/mixed-language additions, wire liveness plan into the active compositor/runtime, and solve browser render verification without promoting a parent review build prematurely."
+}
