@@ -1,0 +1,14 @@
+const L=require('./liveness.js');
+const seq=['welcoming','listening','thinking','gentle','playful','listening','thinking','gentle'];
+let previous=null;
+const plans=seq.map((performance,i)=>{const p=L.plan({performance,turn:i,text:'synthetic child turn '+i,previous});previous=p;return p});
+const assertions=[];const ok=(name,value)=>assertions.push({name,ok:!!value});
+ok('all-five-performance-states',new Set(plans.map(x=>x.performance)).size>=5);
+ok('micro-motion-present',plans.every(x=>x.blinkMs>0&&x.microShiftMs>0&&x.idleAlive));
+ok('response-timing-varies',new Set(plans.map(x=>x.responseDelayMs)).size>=5);
+ok('dead-character-audit-clean',L.deadCharacterAudit(plans).length===0);
+ok('gentle-is-not-instant',L.STATES.gentle.latency[0]>L.STATES.listening.latency[0]);
+ok('thinking-has-cognitive-pause',L.STATES.thinking.latency[0]>=400);
+const result={executions:assertions.length,passed:assertions.filter(x=>x.ok).length,failed:assertions.filter(x=>!x.ok),plans,deadCharacterIssues:L.deadCharacterAudit(plans)};
+console.log(JSON.stringify(result,null,2));
+if(result.failed.length)process.exit(1);
