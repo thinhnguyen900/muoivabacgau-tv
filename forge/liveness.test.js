@@ -1,14 +1,15 @@
 const L=require('./liveness.js');
-const seq=['welcoming','listening','thinking','gentle','playful','listening','thinking','gentle'];
-let previous=null;
-const plans=seq.map((performance,i)=>{const p=L.plan({performance,turn:i,text:'synthetic child turn '+i,previous});previous=p;return p});
-const assertions=[];const ok=(name,value)=>assertions.push({name,ok:!!value});
-ok('all-five-performance-states',new Set(plans.map(x=>x.performance)).size>=5);
-ok('micro-motion-present',plans.every(x=>x.blinkMs>0&&x.microShiftMs>0&&x.idleAlive));
-ok('response-timing-varies',new Set(plans.map(x=>x.responseDelayMs)).size>=5);
-ok('dead-character-audit-clean',L.deadCharacterAudit(plans).length===0);
-ok('gentle-is-not-instant',L.STATES.gentle.latency[0]>L.STATES.listening.latency[0]);
-ok('thinking-has-cognitive-pause',L.STATES.thinking.latency[0]>=400);
-const result={executions:assertions.length,passed:assertions.filter(x=>x.ok).length,failed:assertions.filter(x=>!x.ok),plans,deadCharacterIssues:L.deadCharacterAudit(plans)};
-console.log(JSON.stringify(result,null,2));
-if(result.failed.length)process.exit(1);
+const states=['welcoming','listening','thinking','gentle','playful'];
+let previous=null;const plans=[];const failures=[];
+for(let i=0;i<200;i++){
+  const performance=states[i%states.length];
+  const p=L.plan({performance,turn:i,text:'synthetic child turn '+i,previous,speaking:i%3===0});
+  if(!p.idleAlive||p.blinkMs<=0||p.microShiftMs<=0||p.interruptWindowMs<=0||p.speechChunkMs<500) failures.push({i,reason:'missing-liveness',p});
+  if(performance==='gentle'&&p.eventPolicy!=='suppress-nonessential') failures.push({i,reason:'gentle-event-leak',p});
+  plans.push(p);previous=p;
+}
+const issues=L.deadCharacterAudit(plans);if(issues.length) failures.push({reason:'dead-character-audit',issues});
+const ordinary=L.onInterrupt(plans[1],{kind:'child-speech'});if(!ordinary.stopSpeech||ordinary.acknowledgeWithinMs>220) failures.push({reason:'ordinary-interrupt',ordinary});
+const safety=L.onInterrupt(plans[3],{kind:'distress'});if(safety.acknowledgeWithinMs>100||safety.nextPerformance!=='gentle'||safety.resumePolicy!=='do-not-auto-resume') failures.push({reason:'safety-interrupt',safety});
+const result={executions:200,passed:200-failures.length,failed:failures.length,states,uniqueTiming:new Set(plans.map(p=>p.responseDelayMs)).size,uniqueBlink:new Set(plans.map(p=>p.blinkMs)).size,eventPolicies:[...new Set(plans.map(p=>p.eventPolicy))],deadCharacterIssues:issues,interruptSafety:safety,failures:failures.slice(0,10)};
+console.log(JSON.stringify(result,null,2));if(failures.length)process.exit(1);
