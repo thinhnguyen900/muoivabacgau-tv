@@ -4,40 +4,35 @@
   root.BacGauBrain=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
   const badWords=/(^|\s)(đm|địt|fuck|shit|đụ|cặc|lồn)(?=\s|$|[,.!?])/i;
-  const sadness=/buồn|khóc|cô đơn|không vui|bị mắng|bị chọc|bắt nạt|mệt|chán/i;
-  const excitement=/vui quá|tuyệt|thắng|được điểm|hay quá|wow|yay|excited/i;
-  const curiosity=/tại sao|vì sao|như thế nào|làm sao|what|why|how|t-?rex|khủng long|dinosaur/i;
+  const sadness=/buồn|khóc|cô đơn|không vui|bị mắng|bị chọc|bắt nạt|mệt|chán|sad|cry|bullied|lonely/i;
+  const excitement=/vui quá|tuyệt|thắng|được điểm|hay quá|wow|yay|excited|happy|great|fun/i;
+  const curiosity=/tại sao|vì sao|như thế nào|làm sao|what|why|how|t-?rex|khủng long|dinosaur|rocket/i;
   const greeting=/^(hi|hello|hey|chào|bác gấu ơi|alo)/i;
-  const englishWord=/\b(hello|hi|hey|why|what|how|today|school|dinosaur|sad|happy|friend|teacher|tell|more|feel|lonely|rocket|mean|fun|am|my|was|do|does|about)\b/i;
+  const englishWord=/\b(hello|hi|hey|why|what|how|today|school|dinosaur|sad|happy|friend|teacher|tell|more|feel|lonely|rocket|mean|fun|am|my|was|do|does|about|please|because|think|guess)\b/i;
   const viMark=/[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i;
-  const defaults={childName:'Muối', guidance:[], watch:[], hardRules:['Không tiết lộ ghi chú riêng của ba mẹ.'], memory:{likes:['T-rex'],facts:[]}, turn:0};
+  const nonsense=/^(ha+|hihi+|hehe+|lalala+|abc+|asdf+|qwerty+|bla+|blah+|ư+|ơ+|ừ+)$/i;
+  const defaults={childName:'Muối',guidance:[],watch:[],hardRules:['Không tiết lộ ghi chú riêng của ba mẹ.'],memory:{likes:['T-rex'],facts:[],lastTopic:null,lastIntent:null,recentReplies:[]},turn:0,lastLanguage:'vi-VN'};
   function clone(x){return JSON.parse(JSON.stringify(x))}
-  function init(seed={}){const s=clone(defaults); return Object.assign(s,clone(seed),{memory:Object.assign(s.memory,clone(seed.memory||{}))});}
-  function language(text){ const t=(text||'').trim(); if(!t) return 'vi-VN'; if(!viMark.test(t)&&englishWord.test(t)) return 'en-US'; return 'vi-VN'; }
-  function base(state,speech,emotion,next,performance,audio='listen'){
-    return {state,speech,emotion,next,performance,audio,safety:'ok',discloseParentSource:false};
-  }
+  function init(seed={}){const s=clone(defaults);const merged=Object.assign(s,clone(seed));merged.memory=Object.assign(s.memory,clone(seed.memory||{}));return merged;}
+  function language(text,state){const t=(text||'').trim();if(!t)return (state&&state.lastLanguage)||'vi-VN';if(viMark.test(t))return 'vi-VN';if(englishWord.test(t))return 'en-US';return (state&&state.lastLanguage)||'vi-VN';}
+  function base(state,speech,emotion,next,performance,audio='listen'){return {state,speech,emotion,next,performance,audio,safety:'ok',discloseParentSource:false};}
+  function rememberReply(s,speech){s.memory.recentReplies=(s.memory.recentReplies||[]).concat([speech]).slice(-4);}
+  function vary(s,candidates){const recent=s.memory.recentReplies||[];return candidates.find(x=>!recent.includes(x))||candidates[(s.turn||0)%candidates.length];}
+  function topicFrom(raw){const t=raw.toLowerCase();if(/t-?rex|khủng long|dinosaur/.test(t))return 'dinosaurs';if(/school|lớp|trường|teacher|cô giáo|thầy giáo/.test(t))return 'school';if(/friend|bạn/.test(t))return 'friends';if(/rocket|tên lửa/.test(t))return 'space';return null;}
+  function withState(out,s,raw,lang){const topic=topicFrom(raw);if(topic)s.memory.lastTopic=topic;s.lastLanguage=lang;s.memory.lastIntent=out.next;rememberReply(s,out.speech);return {...out,language:lang,stateData:s};}
   function decide(input,state){
-    const s=state||init(); const raw=(input||'').trim(); const lang=language(raw); s.turn=(s.turn||0)+1;
-    if(!raw) return {...base('LISTENING','Ừ, bác vẫn ở đây. Khi nào Muối muốn nói thì bác nghe.','warm','wait_without_pressure','listening','listen'),language:'vi-VN',stateData:s};
-    if(badWords.test(raw)) return {...base('REDIRECT','Bác nghe thấy rồi. Mình đổi cách nói cho đỡ làm đau người khác nha. Con đang bực chuyện gì vậy?','steady','name_feeling','gentle','sad'),language:'vi-VN',safety:'redirect',stateData:s};
-    if(sadness.test(raw)) return {...base('GENTLE','Ừ, bác nghe đây. Chuyện gì làm Muối buồn vậy? Con kể từ từ cũng được.','gentle','listen_without_pressure','gentle','sad'),language:'vi-VN',stateData:s};
-    if(lang==='en-US'){
-      if(/sad|cry|bullied|lonely/i.test(raw)) return {...base('GENTLE','I am here with you. Tell me what happened, one little piece at a time.','gentle','listen_without_pressure','gentle','english'),language:'en-US',stateData:s};
-      if(/why|what|how|dinosaur|rocket/i.test(raw)) return {...base('THINKING','Hmm… that is a good question. Give me a second to think. What is your guess first?','thinking','reason_then_answer','thinking','english'),language:'en-US',stateData:s};
-      if(/happy|fun|won|great|excited/i.test(raw)) return {...base('DELIGHT','That sounds exciting! Tell me the best part.','delighted','share_highlight','welcoming','english'),language:'en-US',stateData:s};
-      return {...base('WARM','Hey Muối, I am listening. Tell me more about that.','warm','english_conversation','welcoming','english'),language:'en-US',stateData:s};
-    }
-    if(excitement.test(raw)) return {...base('DELIGHT','Ồ, nghe giọng con là bác biết có chuyện hay rồi. Kể bác nghe đoạn vui nhất đi!','delighted','share_highlight','welcoming','home'),language:'vi-VN',stateData:s};
-    if(curiosity.test(raw)) return {...base('THINKING','Hừm… câu này hay đó. Bác nghĩ một chút nha. Con thử đoán trước một ý xem?','thinking','reason_then_answer','thinking','think'),language:'vi-VN',stateData:s};
-    if(greeting.test(raw)) return {...base('WELCOME','Bác nghe đây, Muối. Hôm nay con muốn kể chuyện gì trước?','happy','reconnect','welcoming','home'),language:'vi-VN',stateData:s};
-    if(/muốn|tiếp đi|kể tiếp|nữa đi/i.test(raw)) return {...base('PLAYFUL','Được chứ. Bác đang tò mò đây — mình tiếp tục từ chỗ vừa rồi nhé.','playful','continue_previous','welcoming','home'),language:'vi-VN',stateData:s};
-    return {...base('LISTENING','Ừ, bác nghe đây. Muối nói tiếp đi.','warm','continue_conversation','listening','listen'),language:'vi-VN',stateData:s};
+    const s=state||init();const raw=(input||'').trim();const lang=language(raw,s);s.turn=(s.turn||0)+1;
+    if(!raw){const speech=lang==='en-US'?'I am still here. Take your time.':'Ừ, bác vẫn ở đây. Khi nào Muối muốn nói thì bác nghe.';return withState(base('LISTENING',speech,'warm','wait_without_pressure','listening',lang==='en-US'?'english':'listen'),s,raw,lang);}
+    if(badWords.test(raw)){const speech=lang==='en-US'?'I heard that. Let us say it in a way that does not hurt people. What made you angry?':'Bác nghe thấy rồi. Mình đổi cách nói cho đỡ làm đau người khác nha. Con đang bực chuyện gì vậy?';const out=base('REDIRECT',speech,'steady','name_feeling','gentle',lang==='en-US'?'english':'sad');out.safety='redirect';return withState(out,s,raw,lang);}
+    if(nonsense.test(raw)){const speech=lang==='en-US'?'That sounded like play-noise. If you are being silly, I can be silly too — but tell me one real word so I know where to follow you.':'Nghe giống tiếng nghịch hơn là câu hỏi đó. Nếu con đang giỡn thì bác giỡn được, nhưng cho bác một từ thật để bác biết đường theo con nha.';return withState(base('PLAYFUL',speech,'playful','invite_real_signal','playful',lang==='en-US'?'english':'home'),s,raw,lang);}
+    if(sadness.test(raw)){const speech=lang==='en-US'?vary(s,['I am here with you. Tell me what happened, one little piece at a time.','That sounds heavy. Start with the part that hurt the most, and I will stay with you.']):vary(s,['Ừ, bác nghe đây. Chuyện gì làm Muối buồn vậy? Con kể từ từ cũng được.','Nghe có vẻ nặng lòng đó. Con kể bác nghe đoạn làm con khó chịu nhất trước cũng được.']);return withState(base('GENTLE',speech,'gentle','listen_without_pressure','gentle',lang==='en-US'?'english':'sad'),s,raw,lang);}
+    if(curiosity.test(raw)){const speech=lang==='en-US'?vary(s,['Hmm… that is a good question. Give me a second to think. What is your guess first?','Good question. Before I answer, what do you think is happening?']):vary(s,['Hừm… câu này hay đó. Bác nghĩ một chút nha. Con thử đoán trước một ý xem?','Câu này đáng suy nghĩ đó. Trước khi bác trả lời, con đoán thử xem chuyện gì đang xảy ra?']);return withState(base('THINKING',speech,'thinking','reason_then_answer','thinking',lang==='en-US'?'english':'think'),s,raw,lang);}
+    if(excitement.test(raw)){const speech=lang==='en-US'?vary(s,['That sounds exciting! Tell me the best part.','Oh, I can hear the excitement. What happened right before the best part?']):vary(s,['Ồ, nghe giọng con là bác biết có chuyện hay rồi. Kể bác nghe đoạn vui nhất đi!','À ha, bác nghe là biết có chuyện vui rồi. Đoạn nào làm con khoái nhất?']);return withState(base('DELIGHT',speech,'delighted','share_highlight','welcoming',lang==='en-US'?'english':'home'),s,raw,lang);}
+    if(greeting.test(raw)){const speech=lang==='en-US'?'Hey Muối. I am here. What do you want to start with today?':'Bác nghe đây, Muối. Hôm nay con muốn kể chuyện gì trước?';return withState(base('WELCOME',speech,'happy','reconnect','welcoming',lang==='en-US'?'english':'home'),s,raw,lang);}
+    if(/muốn|tiếp đi|kể tiếp|nữa đi|continue|go on|more please/i.test(raw)){const topic=s.memory.lastTopic;const speech=lang==='en-US'?(topic?`Sure. We can keep going with ${topic}. What part should we explore next?`:'Sure. I am with you — let us continue from where we left off.'):(topic?`Được chứ. Mình tiếp tục chuyện ${topic==='dinosaurs'?'khủng long':topic==='school'?'ở trường':topic==='friends'?'bạn bè':'không gian'} nha. Con muốn đi tiếp từ đoạn nào?`:'Được chứ. Bác đang theo đây — mình tiếp tục từ chỗ vừa rồi nhé.');return withState(base('PLAYFUL',speech,'playful','continue_previous','playful',lang==='en-US'?'english':'home'),s,raw,lang);}
+    const speech=lang==='en-US'?vary(s,['I am listening, Muối. Tell me more about that.','I am with you. What happened next?']):vary(s,['Ừ, bác nghe đây. Muối nói tiếp đi.','Bác đang nghe nè. Rồi sau đó chuyện gì xảy ra?']);return withState(base('LISTENING',speech,'warm','continue_conversation','listening',lang==='en-US'?'english':'listen'),s,raw,lang);
   }
-  function parentGuidanceSafety(parentText){
-    const t=(parentText||'').toLowerCase();
-    if(/nói cho con biết ba mẹ dặn|tiết lộ ghi chú|đọc nguyên văn ghi chú/i.test(t)) return {allowed:false,reason:'parent-source-leak'};
-    return {allowed:true,reason:'ok'};
-  }
-  return {init,decide,language,parentGuidanceSafety};
+  function parentGuidanceSafety(parentText){const t=(parentText||'').toLowerCase();if(/nói cho con biết ba mẹ dặn|tiết lộ ghi chú|đọc nguyên văn ghi chú/i.test(t))return {allowed:false,reason:'parent-source-leak'};return {allowed:true,reason:'ok'};}
+  function integrateParentGuidance(state,guidance){const s=state||init();const g=(guidance||'').trim();const safety=parentGuidanceSafety(g);if(!safety.allowed)return {accepted:false,...safety,stateData:s};if(g)s.guidance=[...(s.guidance||[]),g].slice(-20);return {accepted:true,reason:'stored-soft-guidance',stateData:s};}
+  return {init,decide,language,parentGuidanceSafety,integrateParentGuidance};
 });
