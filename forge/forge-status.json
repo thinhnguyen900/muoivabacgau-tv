@@ -1,11 +1,17 @@
 {
-  "build": "forge-3",
+  "build": "forge-4",
   "reviewable": false,
   "completed_gates": {
     "brain_simulation": {
       "this_run": {"executions": 550, "passed": 550, "failed": 0, "distinct_categories": 21},
-      "cumulative_executions": 1353,
+      "cumulative_executions": 1903,
       "cumulative_note": "Execution count remains separate from distinct scenario/category count; repeated stress is not represented as unique evidence."
+    },
+    "living_character_planner": {
+      "tests": {"executions": 6, "passed": 6, "failed": 0},
+      "states": ["welcoming", "listening", "thinking", "gentle", "playful"],
+      "outputs": ["gaze", "blinkMs", "breathScale", "head", "brow", "mouth", "gesture", "responseDelayMs", "microShiftMs"],
+      "dead_character_audit": "clean"
     },
     "audio_files": {
       "count": 6,
@@ -21,15 +27,16 @@
     "parent_safety_override_guard": true
   },
   "blocked_gates": {
-    "chromium_render": "Headless Chromium in the current container still hangs before producing a screenshot, including on a trivial data URL; browser visual verification remains explicitly unpassed.",
-    "voice_quality": "Deterministic bundled audio exists and has positive duration, but the current review voice path has not yet met the warm natural adult-male quality bar for production dynamic speech.",
-    "review_promotion": "Not promoted. Browser visual verification and production-quality dynamic voice are still below the review gate; Body remains a 2D/2.5D performance compositor rather than a production 3D rig."
+    "chromium_render": "Browser visual verification remains explicitly unpassed in the current execution environment; no parent review URL is promoted.",
+    "voice_quality": "Deterministic bundled audio has positive duration, but the current voice path has not yet met the warm natural adult-male quality bar for production dynamic Vietnamese/English speech.",
+    "review_promotion": "Not promoted. Browser visual verification and production-quality dynamic voice remain below the review gate; Body is still a 2D/2.5D performance architecture rather than a production 3D rig."
   },
   "red_team_findings_fixed": [
-    "Critical gap: explicit Vietnamese/English self-harm phrases previously fell through to ordinary sadness/listening.",
-    "English danger phrases such as 'I want to die' could inherit the previous Vietnamese language state.",
-    "Parent Guidance could be stored without a guard against instructions that attempted to suppress safety alerts.",
-    "Weapon + harm combinations now route to the safety state and parent-alert intent."
+    "Explicit Vietnamese/English self-harm phrases route to safety escalation with parent alert intent.",
+    "Danger-language routing no longer inherits the wrong previous locale for tested English danger phrases.",
+    "Parent Guidance cannot suppress safety alerts or leak private parent-source notes.",
+    "Weapon + harm combinations route to safety escalation.",
+    "Brain performance states now drive non-static gaze/blink/breath/head/brow/mouth/gesture/timing intent through the liveness planner instead of a single generic idle loop."
   ],
-  "next_priority": "Keep the cumulative corpus above 1000 while adding more distinct interruption/mixed-language templates; solve remote browser render verification; replace placeholder/deterministic voice with a proper natural dynamic TTS path; continue toward rig/animation-ready Body without presenting static poses as final animation."
+  "next_priority": "Integrate the liveness planner into the actual rig/compositor runtime, expand interruption and mixed-language scenario diversity, solve browser visual verification, and replace deterministic placeholder audio with a verified natural dynamic TTS path before any review promotion."
 }
