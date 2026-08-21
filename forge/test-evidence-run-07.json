@@ -1,0 +1,39 @@
+{
+  "run": "07",
+  "reviewable": false,
+  "executed": {
+    "direct_brain_liveness_runtime_batch": {
+      "conversation_turns": 240,
+      "assertions": 902,
+      "passed": 902,
+      "failed": 0,
+      "states": ["welcoming", "listening", "thinking", "gentle", "playful"],
+      "coverage": ["Vietnamese", "English", "mixed language", "sadness", "curiosity", "playful nonsense", "state differentiation", "interruptibility", "gentle-world suppression", "dead-character audit", "audio locale contract"]
+    },
+    "runtime_wiring": {
+      "liveness_planner_in_active_app": true,
+      "interrupt_contract_in_active_app": true,
+      "speech_state_mouth_and_gaze_plan": true,
+      "locale_mismatch_fail_closed": true,
+      "browser_speech_fallback_used": false
+    }
+  },
+  "red_team": {
+    "user_observed_failure": [
+      "v7 gate displayed an incomplete/mostly gray visual despite reporting image dimensions",
+      "the supposed Vietnamese clip sounded English-accented/wrong-locale"
+    ],
+    "action": [
+      "Do not use v7 gate as a review build",
+      "Keep visual gate blocked until actual browser rendering is visually asserted, not merely JPEG decode",
+      "Block audio playback when clip locale metadata does not match Brain language",
+      "Do not fall back to Windows/browser speech synthesis"
+    ]
+  },
+  "remaining_blockers": [
+    "No verified production-quality warm adult-male Vietnamese/English dynamic TTS asset/service yet",
+    "No browser-verified full-frame mature stylized 3D character visual yet",
+    "Current Body remains 2D/2.5D performance architecture rather than final rig"
+  ],
+  "next": "Replace the defective v7 visual source and wrong-locale audio with verified production assets, then deploy only after browser screenshot/render and audio-language quality gates pass."
+}
