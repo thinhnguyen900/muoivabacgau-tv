@@ -4,10 +4,13 @@ on:
     branches: [phase2-forge]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   forge-gates:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 18
     steps:
       - uses: actions/checkout@v4
 
@@ -62,10 +65,32 @@ jobs:
           test $(stat -c%s forge/assets/home-full.jpg) -gt 100000
           python - <<'PY'
           from PIL import Image
+          import hashlib, json, os
           p='forge/assets/home-full.jpg'
           im=Image.open(p); im.load()
           assert im.size==(1280,900), im.size
-          print('asset-integrity PASS', im.size)
+          evidence={'ok':True,'path':p,'dimensions':list(im.size),'bytes':os.path.getsize(p),'sha256':hashlib.sha256(open(p,'rb').read()).hexdigest()}
+          with open('forge/evidence/asset-integrity.json','w') as f: json.dump(evidence,f,indent=2)
+          print('asset-integrity PASS', evidence)
+          PY
+
+      - name: Write immutable green manifest
+        run: |
+          python - <<'PY'
+          import json, os, subprocess, datetime
+          def read(p):
+              with open(p,'r',encoding='utf-8') as f:return json.load(f)
+          manifest={
+            'ok': True,
+            'source_commit': os.environ['GITHUB_SHA'],
+            'verified_at_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            'browser': read('forge/evidence/browser-gate.json'),
+            'visual': read('forge/evidence/visual-pixel-gate.json'),
+            'voice': read('forge/evidence/voice-gate.json'),
+            'asset': read('forge/evidence/asset-integrity.json'),
+            'rule': 'Only this manifest from a fully green job may authorize review promotion.'
+          }
+          with open('forge/evidence/green-manifest.json','w',encoding='utf-8') as f:json.dump(manifest,f,ensure_ascii=False,indent=2)
           PY
 
       - name: Upload forge QA evidence
@@ -78,3 +103,29 @@ jobs:
             forge/assets/vi-test.mp3
             forge/assets/en-test.mp3
           if-no-files-found: warn
+
+      - name: Publish green evidence to dedicated branch
+        if: success()
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          mkdir -p /tmp/forge-green
+          cp -r forge/evidence/* /tmp/forge-green/
+          cp forge/assets/vi-test.mp3 /tmp/forge-green/vi-test.mp3
+          cp forge/assets/en-test.mp3 /tmp/forge-green/en-test.mp3
+          git config user.name github-actions
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git fetch origin forge-ci-evidence || true
+          if git show-ref --verify --quiet refs/remotes/origin/forge-ci-evidence; then
+            git checkout -B forge-ci-evidence origin/forge-ci-evidence
+          else
+            git checkout --orphan forge-ci-evidence
+            git rm -rf . || true
+          fi
+          rm -rf evidence
+          mkdir -p evidence
+          cp -r /tmp/forge-green/* evidence/
+          printf '%s\n' "$SOURCE_SHA" > evidence/source-commit.txt
+          git add evidence
+          git commit -m "CI evidence for ${SOURCE_SHA}" || true
+          git push origin forge-ci-evidence --force
