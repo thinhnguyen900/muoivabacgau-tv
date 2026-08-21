@@ -34,17 +34,29 @@ jobs:
       - name: Recover full-frame visual from verified public asset source
         run: |
           set -euo pipefail
-          curl --retry 3 --retry-delay 2 -fsSL https://bacgau-asset-welcome-v5.vercel.app -o /tmp/home-full.b64
-          tr -d '\r\n ' < /tmp/home-full.b64 | base64 -d > forge/assets/home-full.jpg
+          curl --retry 3 --retry-delay 2 -fsSL https://bacgau-asset-welcome-v5.vercel.app/ -o /tmp/home-full.b64
           python - <<'PY'
           from PIL import Image
-          import hashlib, os, json
-          p='forge/assets/home-full.jpg'
-          im=Image.open(p); im.load()
+          import base64, hashlib, json, os, re
+          src='/tmp/home-full.b64'
+          out='forge/assets/home-full.jpg'
+          raw=open(src,'rb').read()
+          # The public source is Base64 text. Strip every non-Base64 byte and
+          # restore padding deterministically instead of relying on GNU base64's
+          # strict stdin parser (the previous run failed here with invalid input).
+          clean=re.sub(rb'[^A-Za-z0-9+/=]', b'', raw)
+          clean=clean.rstrip(b'=')
+          clean += b'=' * ((4 - len(clean) % 4) % 4)
+          data=base64.b64decode(clean, validate=False)
+          open(out,'wb').write(data)
+          expected_size=205142
+          expected_sha='585dc3bc563e9d0e1f0895b624fc8334156ab2c091bf6561314b67779bde189a'
+          actual_sha=hashlib.sha256(data).hexdigest()
+          assert len(data)==expected_size, f'visual source byte mismatch: {len(data)} != {expected_size}'
+          assert actual_sha==expected_sha, f'visual source sha mismatch: {actual_sha} != {expected_sha}'
+          im=Image.open(out); im.load()
           assert im.size==(1280,900), f'expected 1280x900 full frame, got {im.size}'
-          size=os.path.getsize(p)
-          assert size>80000, f'asset unexpectedly tiny/truncated: {size} bytes'
-          evidence={'ok':True,'dimensions':list(im.size),'bytes':size,'sha256':hashlib.sha256(open(p,'rb').read()).hexdigest(),'source':'bacgau-asset-welcome-v5.vercel.app'}
+          evidence={'ok':True,'dimensions':list(im.size),'bytes':len(data),'sha256':actual_sha,'source':'https://bacgau-asset-welcome-v5.vercel.app/'}
           with open('forge/evidence/asset-recovery.json','w') as f: json.dump(evidence,f,indent=2)
           print('asset recovery PASS',evidence)
           PY
@@ -84,11 +96,13 @@ jobs:
           from PIL import Image
           import hashlib, json, os
           p='forge/assets/home-full.jpg'
+          data=open(p,'rb').read()
           im=Image.open(p); im.load()
           assert im.size==(1280,900), im.size
-          size=os.path.getsize(p)
-          assert size>80000, size
-          evidence={'ok':True,'path':p,'dimensions':list(im.size),'bytes':size,'sha256':hashlib.sha256(open(p,'rb').read()).hexdigest()}
+          assert len(data)==205142, len(data)
+          sha=hashlib.sha256(data).hexdigest()
+          assert sha=='585dc3bc563e9d0e1f0895b624fc8334156ab2c091bf6561314b67779bde189a', sha
+          evidence={'ok':True,'path':p,'dimensions':list(im.size),'bytes':len(data),'sha256':sha}
           with open('forge/evidence/asset-integrity.json','w') as f: json.dump(evidence,f,indent=2)
           print('asset-integrity PASS', evidence)
           PY
