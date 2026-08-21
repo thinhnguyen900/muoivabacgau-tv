@@ -1,5 +1,5 @@
 {
-  "build": "forge-9-visual-asset-fixed",
+  "build": "forge-10-ci-recovery-fix",
   "reviewable": false,
   "completed_gates": {
     "brain_simulation": {
@@ -17,17 +17,23 @@
       "vi_voice_required": "vi-VN-NamMinhNeural",
       "en_voice_required": "en-US-GuyNeural",
       "browser_or_windows_voice_fallback": false
-    },
-    "qa_infrastructure_added": true
+    }
+  },
+  "last_verified_failure": {
+    "workflow_run": 32445993158,
+    "job": 96665548124,
+    "step": "Recover verified full-frame visual from repository transport chunks",
+    "error": "binascii.Error: Incorrect padding",
+    "root_cause": "The five repository Base64 transport chunks were truncated during prior text transfer, so their concatenation was shorter than the expected complete encoded JPEG."
   },
   "fixed_now": {
-    "visual_asset_transfer": "Replaced corrupted ~14.6 KB repo JPEG with a full-frame 1280x900 JPEG blob uploaded through GitHub git-blob API; repository copy is now >100 KB and no longer the narrow-strip corruption mode.",
-    "commit": "f85c9e6b6b4fd1eea2af4ceb4d8061220c841051"
+    "ci_visual_recovery": "Removed the truncated transport-chunk dependency and the prior artificial JPEG COM byte inflation. CI now fetches the dedicated /home.jpg asset endpoint, decodes it, requires a real Pillow-decodable 1280x900 image larger than 80 KB, records its SHA-256, and later requires the same SHA at the integrity gate.",
+    "parent_guidance_gate": "Added explicit parent-guidance pipeline, simulation, and Brain-to-Body regression tests before browser promotion.",
+    "visual_truth": "Chromium screenshot plus pixel regression remains mandatory; image dimensions or byte count alone cannot promote the build."
   },
   "blocked_gates": {
-    "ci_green_evidence": "Awaiting the new CI run triggered by the corrected visual commit; no review URL is promoted until Chromium screenshot/pixel and vi-VN neural voice playback gates are green.",
-    "voice_listening_quality": "Locale-bound vi-VN neural generation is configured, but final review waits for CI playback evidence.",
-    "production_character_body": "Current Body remains 2D/2.5D performance architecture rather than the final mature stylized 3D rig."
+    "ci_green_evidence": "A new run is required after this corrective commit. No review URL is promoted until visual, voice, browser, runtime, Brain, safety, and Parent Guidance gates are all green.",
+    "production_character_body": "Current Body remains 2D/2.5D rather than the final mature stylized 3D rig."
   },
-  "next_priority": "Run CI on the corrected full-frame asset, inspect screenshot and vi-VN audio evidence, fix any red gate immediately, then deploy the verified forge build."
+  "next_priority": "Trigger CI from phase2-forge, inspect the next real failing step if any, fix and rerun until the green evidence bundle is published."
 }
