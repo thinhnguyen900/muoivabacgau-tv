@@ -16,8 +16,13 @@ const geometry=await page.evaluate(()=>{
  const gl=canvas?.getContext('webgl2')||canvas?.getContext('webgl');
  return {stage:stage&&{x:stage.x,y:stage.y,w:stage.width,h:stage.height},canvas:c&&{x:c.x,y:c.y,w:c.width,h:c.height},webgl:!!gl};
 });
-if(!geometry.canvas||!geometry.webgl)throw new Error(`Visual v3 WebGL canvas not live: ${JSON.stringify(geometry)}`);
-if(Math.abs(geometry.stage.w-geometry.canvas.w)>2||Math.abs(geometry.stage.h-geometry.canvas.h)>2)throw new Error(`Visual v3 canvas does not cover stage: ${JSON.stringify(geometry)}`);
+if(!geometry.canvas||!geometry.webgl)throw new Error(`Visual v4 WebGL canvas not live: ${JSON.stringify(geometry)}`);
+if(Math.abs(geometry.stage.w-geometry.canvas.w)>2||Math.abs(geometry.stage.h-geometry.canvas.h)>2)throw new Error(`Visual v4 canvas does not cover stage: ${JSON.stringify(geometry)}`);
+
+const body=await page.evaluate(()=>window.__BACGAU_BODY_V4__||null);
+if(!body?.facialRig||!body?.scleraIrisPupil||!body?.eyelids||!body?.softBrows||!body?.splitMuzzle||!body?.roundedArms||!body?.cinematicLighting||!body?.audioDrivenMouth){
+ throw new Error(`Warm visual v4 contract incomplete: ${JSON.stringify(body)}`);
+}
 
 const states=['welcoming','gentle','thinking','playful'];
 const evidence=[];
@@ -31,14 +36,14 @@ for(const state of states){
  await page.waitForTimeout(360);
  const audio=await page.$eval('#scenarioAudio',a=>({paused:a.paused,currentTime:a.currentTime,duration:a.duration,src:a.currentSrc||a.src}));
  const dump=await page.textContent('#stateDump');
- if(audio.paused||!(audio.duration>0))throw new Error(`Visual v3 scenario ${state} did not play audio`);
- if(!dump.includes(`\"performance\": \"${state}\"`))throw new Error(`Visual v3 did not consume ${state}`);
+ if(audio.paused||!(audio.duration>0))throw new Error(`Visual v4 scenario ${state} did not play audio`);
+ if(!dump.includes(`\"performance\": \"${state}\"`))throw new Error(`Visual v4 did not consume ${state}`);
  const shot=`forge/evidence/visual-v3-${state}.png`;
  await page.locator('#stage').screenshot({path:shot});
  evidence.push({state,audio,screenshot:shot});
 }
 await page.screenshot({path:'forge/evidence/visual-v3-1920x1080.png',fullPage:true});
-if(pageErrors.length)throw new Error(`Visual v3 page errors: ${pageErrors.join(' | ')}`);
-fs.writeFileSync('forge/evidence/visual-v3-gate.json',JSON.stringify({ok:true,url,geometry,states:evidence,pageErrors},null,2));
+if(pageErrors.length)throw new Error(`Visual v4 page errors: ${pageErrors.join(' | ')}`);
+fs.writeFileSync('forge/evidence/visual-v3-gate.json',JSON.stringify({ok:true,visualVersion:'v4-warm',url,geometry,body,states:evidence,pageErrors},null,2));
 await browser.close();
-console.log('visual-v3-gate PASS',JSON.stringify({states:states.length,geometry}));
+console.log('visual-v4-gate PASS',JSON.stringify({states:states.length,geometry,body}));
