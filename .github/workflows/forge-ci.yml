@@ -1,0 +1,20 @@
+name: Bác Gấu Forge CI
+on:
+  push:
+    branches: [phase2-forge]
+  workflow_dispatch:
+jobs:
+  regress:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Production brain regression
+        run: node forge/simulate.js
+      - name: Living-character planner regression
+        run: node forge/liveness.test.js
+      - name: Active runtime contract regression
+        run: node forge/runtime-contract.test.js
