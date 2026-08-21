@@ -1,7 +1,7 @@
 {
   "ok": true,
-  "source_commit": "fcb57a687727714782232075802a58d090775ddc",
-  "verified_at_utc": "2026-08-21T20:03:28.971548+00:00",
+  "source_commit": "72554165153bf0aa1733680b6969e50bc3dae637",
+  "verified_at_utc": "2026-08-21T23:10:43.497126+00:00",
   "browser": {
     "ok": true,
     "url": "http://127.0.0.1:4173/forge/review-gate.html",
@@ -25,28 +25,28 @@
       {
         "state": "welcoming",
         "paused": false,
-        "currentTime": 0.362926,
+        "currentTime": 0.473126,
         "duration": 5.064,
         "src": "http://127.0.0.1:4173/forge/assets/scenario-welcoming.mp3"
       },
       {
         "state": "gentle",
         "paused": false,
-        "currentTime": 0.514354,
+        "currentTime": 0.546573,
         "duration": 4.56,
         "src": "http://127.0.0.1:4173/forge/assets/scenario-gentle.mp3"
       },
       {
         "state": "thinking",
         "paused": false,
-        "currentTime": 0.302579,
+        "currentTime": 0.542124,
         "duration": 4.56,
         "src": "http://127.0.0.1:4173/forge/assets/scenario-thinking.mp3"
       },
       {
         "state": "playful",
         "paused": false,
-        "currentTime": 0.390048,
+        "currentTime": 0.560313,
         "duration": 4.488,
         "src": "http://127.0.0.1:4173/forge/assets/scenario-playful.mp3"
       }
@@ -59,32 +59,40 @@
       "brows": true,
       "jaw": true,
       "audioDrivenMouth": true,
-      "visualVersion": "v5-warm-soft",
+      "visualVersion": "v7-cinematic-soft",
       "scleraIrisPupil": true,
       "softArmRig": true,
       "cinematicToneMap": true,
       "eyeWhiteReduced": true,
       "muzzleIntegrated": true,
-      "softBrow": true
+      "softBrow": true,
+      "eyeSocket": true,
+      "roundedSilhouette": true,
+      "microSaccades": true,
+      "asymmetricBlink": true,
+      "woodFloor": true,
+      "windowDepth": true,
+      "handPalms": true,
+      "balancedProportions": true
     },
     "render": "procedural-webgl-threejs",
     "pageErrors": []
   },
   "visual": {
     "ok": true,
-    "grayish_fraction": 0.0013125,
-    "dominant_bucket_fraction": 0.2240625,
-    "mean_channel_stddev": 25.500237412776034,
-    "quantized_entropy_bits": 4.652741073764232,
+    "grayish_fraction": 0.0006875,
+    "dominant_bucket_fraction": 0.2118125,
+    "mean_channel_stddev": 27.735013308641754,
+    "quantized_entropy_bits": 4.705586631292117,
     "crop_size": [
       1482,
       1048
     ],
     "core": {
       "grayish_fraction": 0.0,
-      "dominant_bucket_fraction": 0.23989583333333334,
-      "mean_channel_stddev": 23.97535666485679,
-      "quantized_entropy_bits": 4.623880397536708,
+      "dominant_bucket_fraction": 0.18395833333333333,
+      "mean_channel_stddev": 27.713020051213586,
+      "quantized_entropy_bits": 4.547398977398315,
       "crop_size": [
         1007,
         839
@@ -125,7 +133,7 @@
         "state": "welcoming",
         "audio": {
           "paused": false,
-          "currentTime": 1.746024,
+          "currentTime": 1.53519,
           "duration": 5.064,
           "src": "http://127.0.0.1:4173/forge/assets/scenario-welcoming.mp3"
         },
@@ -135,7 +143,7 @@
         "state": "gentle",
         "audio": {
           "paused": false,
-          "currentTime": 1.384093,
+          "currentTime": 1.566595,
           "duration": 4.56,
           "src": "http://127.0.0.1:4173/forge/assets/scenario-gentle.mp3"
         },
@@ -145,7 +153,7 @@
         "state": "thinking",
         "audio": {
           "paused": false,
-          "currentTime": 1.391902,
+          "currentTime": 1.484914,
           "duration": 4.56,
           "src": "http://127.0.0.1:4173/forge/assets/scenario-thinking.mp3"
         },
@@ -155,7 +163,7 @@
         "state": "playful",
         "audio": {
           "paused": false,
-          "currentTime": 1.384513,
+          "currentTime": 1.506845,
           "duration": 4.488,
           "src": "http://127.0.0.1:4173/forge/assets/scenario-playful.mp3"
         },
@@ -174,72 +182,72 @@
       {
         "a": "welcoming",
         "b": "gentle",
-        "rms": 13.766977412401943,
-        "mean_abs": 2.1733638694014346,
+        "rms": 13.38594505559866,
+        "mean_abs": 2.02157055145203,
         "bbox": [
           44,
-          194,
-          1028,
+          197,
+          1030,
           1006
         ]
       },
       {
         "a": "welcoming",
         "b": "thinking",
-        "rms": 14.85891401724425,
-        "mean_abs": 2.5813721399800147,
+        "rms": 14.457525067780242,
+        "mean_abs": 2.44417767235666,
         "bbox": [
           44,
-          195,
-          1033,
+          189,
+          1031,
           1006
         ]
       },
       {
         "a": "welcoming",
         "b": "playful",
-        "rms": 12.303604231141898,
-        "mean_abs": 1.823418125221058,
+        "rms": 12.713811104630905,
+        "mean_abs": 1.9970766672504319,
         "bbox": [
           44,
-          196,
-          1036,
+          197,
+          1042,
           1006
         ]
       },
       {
         "a": "gentle",
         "b": "thinking",
-        "rms": 12.821239473565953,
-        "mean_abs": 1.8449345925490963,
+        "rms": 11.995308224005788,
+        "mean_abs": 1.5674551359314315,
         "bbox": [
           44,
-          194,
-          1033,
+          189,
+          1031,
           1006
         ]
       },
       {
         "a": "gentle",
         "b": "playful",
-        "rms": 11.559938594617124,
-        "mean_abs": 1.5960830217057618,
+        "rms": 12.764709668272475,
+        "mean_abs": 2.007937274434864,
         "bbox": [
           44,
-          194,
-          1036,
+          197,
+          1042,
           1006
         ]
       },
       {
         "a": "thinking",
         "b": "playful",
-        "rms": 12.057113445388076,
-        "mean_abs": 1.735202626599774,
+        "rms": 13.19803374411296,
+        "mean_abs": 2.070884970794573,
         "bbox": [
           44,
-          195,
-          1036,
+          189,
+          1042,
           1006
         ]
       }
