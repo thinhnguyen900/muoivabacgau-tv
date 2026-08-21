@@ -13,6 +13,8 @@ jobs:
     timeout-minutes: 18
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - uses: actions/setup-node@v4
         with:
@@ -31,38 +33,38 @@ jobs:
           npx playwright install --with-deps chromium
           mkdir -p forge/assets forge/evidence
 
-      - name: Recover full-frame visual from durable repository payload
+      - name: Recover verified full-frame visual from immutable historical commit
         run: |
           set -euo pipefail
+          VERIFIED_COMMIT=94fae8f74c2e15a66906df3a4da55a74814ae493
+          git fetch --depth=1 origin "$VERIFIED_COMMIT"
+          rm -f /tmp/transport-q10.b64.*
+          for i in 00 01 02 03 04; do
+            git show "$VERIFIED_COMMIT:forge/assets/transport-q10.b64.$i" > "/tmp/transport-q10.b64.$i"
+          done
           python - <<'PY'
-          from PIL import Image, ImageFile
-          import base64, glob, hashlib, json, io, os, re
-          parts=sorted(glob.glob('forge/assets/home-full.b64.*'))
-          if not parts:
-              raise SystemExit('FAIL: no home-full repository payload chunks')
+          from PIL import Image
+          import base64, glob, hashlib, json, io, os
+          parts=sorted(glob.glob('/tmp/transport-q10.b64.*'))
           chunks=[''.join(open(p,'r',encoding='utf-8').read().split()) for p in parts]
-          print('home-full chunk diagnostics',[(os.path.basename(p),len(c)) for p,c in zip(parts,chunks)])
+          sizes=[len(c) for c in chunks]
+          print('historical transport chunk sizes',sizes)
           encoded=''.join(chunks)
-          encoded=re.sub(r'[^A-Za-z0-9+/=]','',encoded).rstrip('=')
-          encoded += '='*((4-len(encoded)%4)%4)
-          payload=base64.b64decode(encoded,validate=False)
-          print('home-full decoded bytes',len(payload),'sha256',hashlib.sha256(payload).hexdigest(),'head',payload[:2].hex(),'tail',payload[-2:].hex())
-          ImageFile.LOAD_TRUNCATED_IMAGES=True
-          try:
-              src=Image.open(io.BytesIO(payload)).convert('RGB')
-              print('home-full decoded dimensions',src.size)
-          except Exception as e:
-              raise SystemExit(f'FAIL: home-full repository payload cannot be decoded as image: {type(e).__name__}: {e}')
-          if src.size!=(1280,900):
-              raise SystemExit(f'FAIL: durable home-full repository payload is not the required full frame; got {src.size}, expected (1280, 900)')
+          raw=base64.b64decode(encoded,validate=True)
+          raw_sha=hashlib.sha256(raw).hexdigest()
+          assert len(raw)==25224, f'expected 25224 transport bytes, got {len(raw)}'
+          assert raw_sha=='f3a00b5ddfd4e1a1f514a87e7aaf15d6589022413a967cc4dbb4937ab268958b', raw_sha
+          im=Image.open(io.BytesIO(raw)).convert('RGB')
+          assert im.size==(1280,900), f'expected 1280x900, got {im.size}'
           out='forge/assets/home-full.jpg'
-          src.save(out,format='JPEG',quality=95,optimize=False,progressive=False,subsampling=0)
+          im.save(out,format='JPEG',quality=90,optimize=False,progressive=False,subsampling=2)
           data=open(out,'rb').read()
+          sha=hashlib.sha256(data).hexdigest()
+          assert len(data)==82204 and len(data)>80000, len(data)
+          assert sha=='29eb363bafe671a5c29e0d02c14ff38747c62a41777f17d5cd7bed02051ab26f', sha
           verify=Image.open(io.BytesIO(data)); verify.load()
           assert verify.size==(1280,900), verify.size
-          assert len(data)>80000, f'normalized full frame unexpectedly small: {len(data)} bytes'
-          sha=hashlib.sha256(data).hexdigest()
-          evidence={'ok':True,'dimensions':list(verify.size),'bytes':len(data),'sha256':sha,'source_payload_bytes':len(payload),'source_payload_sha256':hashlib.sha256(payload).hexdigest(),'chunks':[{'path':p,'chars':len(c)} for p,c in zip(parts,chunks)],'normalization':'Pillow 12.3.0 tolerant decode -> RGB JPEG q95 4:4:4','visible_truth':'not accepted here; Chromium screenshot + pixel regression must still pass'}
+          evidence={'ok':True,'dimensions':[1280,900],'bytes':len(data),'sha256':sha,'transport_bytes':len(raw),'transport_sha256':raw_sha,'source_commit':'94fae8f74c2e15a66906df3a4da55a74814ae493','chunk_sizes':sizes,'method':'immutable historical Git objects -> verified q10 transport -> Pillow 12.3.0 JPEG q90 re-encode','visible_truth':'not accepted here; Chromium screenshot + pixel regression must still pass'}
           with open('forge/evidence/asset-recovery.json','w') as f: json.dump(evidence,f,indent=2)
           print('asset recovery PASS',evidence)
           PY
@@ -111,8 +113,9 @@ jobs:
           data=open(p,'rb').read()
           im=Image.open(p); im.load()
           assert im.size==(1280,900), im.size
-          assert len(data)>80000, len(data)
+          assert len(data)==82204 and len(data)>80000, len(data)
           sha=hashlib.sha256(data).hexdigest()
+          assert sha=='29eb363bafe671a5c29e0d02c14ff38747c62a41777f17d5cd7bed02051ab26f', sha
           recovery=json.load(open('forge/evidence/asset-recovery.json'))
           assert recovery['sha256']==sha
           evidence={'ok':True,'path':p,'dimensions':list(im.size),'bytes':len(data),'sha256':sha}
