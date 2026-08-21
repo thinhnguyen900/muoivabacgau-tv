@@ -24,14 +24,24 @@ const geometry=await page.evaluate(()=>{
 });
 if(!geometry.canvas||!geometry.webgl)throw new Error(`WebGL canvas not live: ${JSON.stringify(geometry)}`);
 if(Math.abs(geometry.stage.w-geometry.canvas.w)>2||Math.abs(geometry.stage.h-geometry.canvas.h)>2)throw new Error(`Canvas does not cover stage: ${JSON.stringify(geometry)}`);
+
+const scenarioEvidence=[];
 const stateDumps=[];
 for(const state of ['welcoming','gentle','thinking','playful']){
- await page.click(`[data-state="${state}"]`);await page.waitForTimeout(220);
+ await page.click(`[data-state="${state}"]`);
+ await page.waitForFunction(()=>window.__BACGAU_SPEAKING__===true,null,{timeout:5000});
+ await page.waitForFunction(s=>window.__BACGAU_SCENARIO_AUDIO__?.state===s&&window.__BACGAU_SCENARIO_AUDIO__?.played===true,state,{timeout:5000});
+ const audio=await page.$eval('#scenarioAudio',a=>({paused:a.paused,currentTime:a.currentTime,duration:a.duration,src:a.currentSrc||a.src}));
+ if(audio.paused||!(audio.duration>0))throw new Error(`Scenario ${state} did not play neural audio: ${JSON.stringify(audio)}`);
+ await page.waitForTimeout(260);
  const dump=await page.textContent('#stateDump');
  if(!dump.includes(`"performance": "${state}"`))throw new Error(`Runtime did not consume liveness state ${state}`);
+ if(!dump.includes('"speaking": true'))throw new Error(`Scenario ${state} liveness plan is not speech-aware`);
  stateDumps.push(dump);
+ scenarioEvidence.push({state,...audio});
 }
 if(new Set(stateDumps).size!==4)throw new Error('Brain->Body state outputs are not distinct');
+
 for(const spec of [{button:'#viBtn',audio:'#viAudio',label:'vi'},{button:'#enBtn',audio:'#enAudio',label:'en'}]){
  const duration=await page.$eval(spec.audio,a=>new Promise((resolve,reject)=>{if(Number.isFinite(a.duration)&&a.duration>0)return resolve(a.duration);a.addEventListener('loadedmetadata',()=>resolve(a.duration),{once:true});a.addEventListener('error',()=>reject(new Error('audio metadata error')),{once:true})}));
  if(!(duration>0))throw new Error(`${spec.label} duration invalid`);
@@ -41,6 +51,8 @@ for(const spec of [{button:'#viBtn',audio:'#viAudio',label:'vi'},{button:'#enBtn
 await page.waitForTimeout(300);
 await page.screenshot({path:'forge/evidence/forge-gate-1920x1080.png',fullPage:true});
 if(pageErrors.length)throw new Error(`Browser console/page errors: ${pageErrors.join(' | ')}`);
-fs.writeFileSync('forge/evidence/browser-gate.json',JSON.stringify({ok:true,url,geometry,states:4,render:'procedural-webgl-threejs',pageErrors},null,2));
+const body=await page.evaluate(()=>window.__BACGAU_BODY_V2__||null);
+if(!body?.facialRig||!body?.blink||!body?.gaze||!body?.breathing||!body?.brows||!body?.jaw||!body?.audioDrivenMouth)throw new Error(`Body rig contract incomplete: ${JSON.stringify(body)}`);
+fs.writeFileSync('forge/evidence/browser-gate.json',JSON.stringify({ok:true,url,geometry,states:4,scenarioSpeech:scenarioEvidence,body,render:'procedural-webgl-threejs',pageErrors},null,2));
 await browser.close();
-console.log('browser-gate PASS',JSON.stringify(geometry));
+console.log('browser-gate PASS',JSON.stringify({geometry,scenarioSpeech:scenarioEvidence.map(x=>x.state)}));
