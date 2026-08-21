@@ -92,12 +92,12 @@ jobs:
       - name: Screenshot pixel regression gate
         run: python forge/visual-pixel-gate.py
 
-      - name: Visual v3 Chromium review-candidate gate
+      - name: Visual v3 legacy Chromium regression gate
         env:
           FORGE_V3_URL: http://127.0.0.1:4173/forge/review-gate-v3.html
         run: node forge/visual-v3-gate.mjs
 
-      - name: Visual v3 emotion distinctness gate
+      - name: Visual v3 legacy emotion distinctness gate
         run: python forge/visual-v3-state-diff.py
 
       - name: Write immutable green manifest
@@ -112,11 +112,11 @@ jobs:
             'verified_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
             'browser':read('forge/evidence/browser-gate.json'),
             'visual':read('forge/evidence/visual-pixel-gate.json'),
-            'visual_v3':read('forge/evidence/visual-v3-gate.json'),
-            'visual_v3_state_diff':read('forge/evidence/visual-v3-state-diff.json'),
+            'visual_v3_legacy':read('forge/evidence/visual-v3-gate.json'),
+            'visual_v3_state_diff_legacy':read('forge/evidence/visual-v3-state-diff.json'),
             'voice':read('forge/evidence/voice-gate.json'),
             'turn_runtime':{'ok':True,'unified_pipeline':True,'interruptible':True,'locale_bound':True},
-            'render':{'mode':'procedural-webgl-threejs-visual-v3','binary_image_transport':False},
+            'render':{'mode':'procedural-webgl-threejs-visual-v5','binary_image_transport':False},
             'rule':'Only this manifest from a fully green job may authorize review promotion.'
           }
           with open('forge/evidence/green-manifest.json','w',encoding='utf-8') as f:json.dump(manifest,f,ensure_ascii=False,indent=2)
@@ -149,7 +149,7 @@ jobs:
           cp forge/turn-runtime.js /tmp/forge-green/turn-runtime.js
           cp forge/three.module.js /tmp/forge-green/three.module.js
           cp forge/three.core.js /tmp/forge-green/three.core.js
-          sed -e 's#\./assets/vi-test.mp3#./vi-test.mp3#g' -e 's#\./assets/en-test.mp3#./en-test.mp3#g' -e 's#\./assets/scenario-#./scenario-#g' forge/review-gate-v3.html > /tmp/forge-green/index.html
+          sed -e 's#\./assets/vi-test.mp3#./vi-test.mp3#g' -e 's#\./assets/en-test.mp3#./en-test.mp3#g' -e 's#\./assets/scenario-#./scenario-#g' forge/review-gate.html > /tmp/forge-green/index.html
           git config user.name github-actions
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git fetch origin forge-ci-evidence || true
@@ -164,5 +164,5 @@ jobs:
           cp -r /tmp/forge-green/* evidence/
           printf '%s\n' "$SOURCE_SHA" > evidence/source-commit.txt
           git add evidence
-          git commit -m "CI green visual v3 review bundle for ${SOURCE_SHA}" || true
+          git commit -m "CI green visual v5 review bundle for ${SOURCE_SHA}" || true
           git push origin forge-ci-evidence --force
