@@ -13,8 +13,6 @@ jobs:
     timeout-minutes: 18
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
 
       - uses: actions/setup-node@v4
         with:
@@ -23,51 +21,18 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install media and QA dependencies
+      - name: Install voice, WebGL and QA dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
           python -m pip install --upgrade pip
-          pip install edge-tts pillow==12.3.0
-          npm install --no-save playwright@1.55.0
+          pip install edge-tts pillow
+          npm install --no-save playwright@1.55.0 three@0.180.0
           npx playwright install --with-deps chromium
+          cp node_modules/three/build/three.module.js forge/three.module.js
           mkdir -p forge/assets forge/evidence
-
-      - name: Recover verified full-frame visual from immutable historical commit
-        run: |
-          set -euo pipefail
-          VERIFIED_COMMIT=94fae8f74c2e15a66906df3a4da55a74814ae493
-          git fetch --depth=1 origin "$VERIFIED_COMMIT"
-          rm -f /tmp/transport-q10.b64.*
-          for i in 00 01 02 03 04; do
-            git show "$VERIFIED_COMMIT:forge/assets/transport-q10.b64.$i" > "/tmp/transport-q10.b64.$i"
-          done
-          python - <<'PY'
-          from PIL import Image
-          import base64, glob, hashlib, json, io, os
-          parts=sorted(glob.glob('/tmp/transport-q10.b64.*'))
-          chunks=[''.join(open(p,'r',encoding='utf-8').read().split()) for p in parts]
-          sizes=[len(c) for c in chunks]
-          print('historical transport chunk sizes',sizes)
-          encoded=''.join(chunks)
-          raw=base64.b64decode(encoded,validate=True)
-          raw_sha=hashlib.sha256(raw).hexdigest()
-          assert len(raw)==25224, f'expected 25224 transport bytes, got {len(raw)}'
-          assert raw_sha=='f3a00b5ddfd4e1a1f514a87e7aaf15d6589022413a967cc4dbb4937ab268958b', raw_sha
-          im=Image.open(io.BytesIO(raw)).convert('RGB')
-          assert im.size==(1280,900), f'expected 1280x900, got {im.size}'
-          out='forge/assets/home-full.jpg'
-          im.save(out,format='JPEG',quality=90,optimize=False,progressive=False,subsampling=2)
-          data=open(out,'rb').read()
-          sha=hashlib.sha256(data).hexdigest()
-          assert len(data)==82204 and len(data)>80000, len(data)
-          assert sha=='29eb363bafe671a5c29e0d02c14ff38747c62a41777f17d5cd7bed02051ab26f', sha
-          verify=Image.open(io.BytesIO(data)); verify.load()
-          assert verify.size==(1280,900), verify.size
-          evidence={'ok':True,'dimensions':[1280,900],'bytes':len(data),'sha256':sha,'transport_bytes':len(raw),'transport_sha256':raw_sha,'source_commit':'94fae8f74c2e15a66906df3a4da55a74814ae493','chunk_sizes':sizes,'method':'immutable historical Git objects -> verified q10 transport -> Pillow 12.3.0 JPEG q90 re-encode','visible_truth':'not accepted here; Chromium screenshot + pixel regression must still pass'}
-          with open('forge/evidence/asset-recovery.json','w') as f: json.dump(evidence,f,indent=2)
-          print('asset recovery PASS',evidence)
-          PY
+          test -s forge/three.module.js
+          grep -q "./three.module.js" forge/review-gate.html
 
       - name: Generate explicit locale-bound neural voice fixtures
         run: |
@@ -96,32 +61,13 @@ jobs:
           echo $! > /tmp/bacgau-http.pid
           for i in {1..20}; do curl -fsS http://127.0.0.1:4173/forge/review-gate.html >/dev/null && break; sleep 0.5; done
 
-      - name: Real Chromium screenshot, interaction and audio playback gate
+      - name: Real Chromium WebGL, interaction and audio playback gate
         env:
           FORGE_GATE_URL: http://127.0.0.1:4173/forge/review-gate.html
         run: node forge/browser-gate.mjs
 
       - name: Screenshot pixel regression gate
         run: python forge/visual-pixel-gate.py
-
-      - name: Asset integrity gate
-        run: |
-          python - <<'PY'
-          from PIL import Image
-          import hashlib, json
-          p='forge/assets/home-full.jpg'
-          data=open(p,'rb').read()
-          im=Image.open(p); im.load()
-          assert im.size==(1280,900), im.size
-          assert len(data)==82204 and len(data)>80000, len(data)
-          sha=hashlib.sha256(data).hexdigest()
-          assert sha=='29eb363bafe671a5c29e0d02c14ff38747c62a41777f17d5cd7bed02051ab26f', sha
-          recovery=json.load(open('forge/evidence/asset-recovery.json'))
-          assert recovery['sha256']==sha
-          evidence={'ok':True,'path':p,'dimensions':list(im.size),'bytes':len(data),'sha256':sha}
-          with open('forge/evidence/asset-integrity.json','w') as f: json.dump(evidence,f,indent=2)
-          print('asset-integrity PASS', evidence)
-          PY
 
       - name: Write immutable green manifest
         run: |
@@ -130,16 +76,16 @@ jobs:
           def read(p):
               with open(p,'r',encoding='utf-8') as f:return json.load(f)
           manifest={
-            'ok': True,
-            'source_commit': os.environ['GITHUB_SHA'],
-            'verified_at_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
-            'browser': read('forge/evidence/browser-gate.json'),
-            'visual': read('forge/evidence/visual-pixel-gate.json'),
-            'voice': read('forge/evidence/voice-gate.json'),
-            'asset': read('forge/evidence/asset-integrity.json'),
-            'rule': 'Only this manifest from a fully green job may authorize review promotion.'
+            'ok':True,
+            'source_commit':os.environ['GITHUB_SHA'],
+            'verified_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            'browser':read('forge/evidence/browser-gate.json'),
+            'visual':read('forge/evidence/visual-pixel-gate.json'),
+            'voice':read('forge/evidence/voice-gate.json'),
+            'render':{'mode':'procedural-webgl-threejs','binary_image_transport':False},
+            'rule':'Only this manifest from a fully green job may authorize review promotion.'
           }
-          with open('forge/evidence/green-manifest.json','w',encoding='utf-8') as f: json.dump(manifest,f,ensure_ascii=False,indent=2)
+          with open('forge/evidence/green-manifest.json','w',encoding='utf-8') as f:json.dump(manifest,f,ensure_ascii=False,indent=2)
           PY
 
       - name: Upload forge QA evidence
@@ -149,7 +95,6 @@ jobs:
           name: bacgau-forge-qa-evidence
           path: |
             forge/evidence/
-            forge/assets/home-full.jpg
             forge/assets/vi-test.mp3
             forge/assets/en-test.mp3
           if-no-files-found: warn
@@ -161,12 +106,12 @@ jobs:
         run: |
           mkdir -p /tmp/forge-green
           cp -r forge/evidence/* /tmp/forge-green/
-          cp forge/assets/home-full.jpg /tmp/forge-green/home-full.jpg
           cp forge/assets/vi-test.mp3 /tmp/forge-green/vi-test.mp3
           cp forge/assets/en-test.mp3 /tmp/forge-green/en-test.mp3
           cp forge/brain.js /tmp/forge-green/brain.js
           cp forge/liveness.js /tmp/forge-green/liveness.js
-          sed -e 's#\./assets/home-full.jpg#./home-full.jpg#g' -e 's#\./assets/vi-test.mp3#./vi-test.mp3#g' -e 's#\./assets/en-test.mp3#./en-test.mp3#g' forge/review-gate.html > /tmp/forge-green/index.html
+          cp forge/three.module.js /tmp/forge-green/three.module.js
+          sed -e 's#\./assets/vi-test.mp3#./vi-test.mp3#g' -e 's#\./assets/en-test.mp3#./en-test.mp3#g' forge/review-gate.html > /tmp/forge-green/index.html
           git config user.name github-actions
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git fetch origin forge-ci-evidence || true
@@ -181,5 +126,5 @@ jobs:
           cp -r /tmp/forge-green/* evidence/
           printf '%s\n' "$SOURCE_SHA" > evidence/source-commit.txt
           git add evidence
-          git commit -m "CI green review bundle for ${SOURCE_SHA}" || true
+          git commit -m "CI green WebGL review bundle for ${SOURCE_SHA}" || true
           git push origin forge-ci-evidence --force
