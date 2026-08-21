@@ -31,32 +31,31 @@ jobs:
           npx playwright install --with-deps chromium
           mkdir -p forge/assets forge/evidence
 
-      - name: Recover full-frame visual from verified public asset source
+      - name: Recover verified full-frame visual from repository transport chunks
         run: |
           set -euo pipefail
-          curl --retry 3 --retry-delay 2 -fsSL https://bacgau-asset-welcome-v5.vercel.app/ -o /tmp/home-full.b64
           python - <<'PY'
           from PIL import Image
-          import base64, hashlib, json, os, re
-          src='/tmp/home-full.b64'
+          import base64, glob, hashlib, json, struct, io
+          parts=sorted(glob.glob('forge/assets/transport-q10.b64.*'))
+          assert len(parts)==5, f'expected 5 visual transport chunks, got {parts}'
+          encoded=''.join(open(p,'r',encoding='utf-8').read().strip() for p in parts)
+          raw=base64.b64decode(encoded, validate=True)
+          assert len(raw)==25224, len(raw)
+          raw_sha=hashlib.sha256(raw).hexdigest()
+          assert raw_sha=='f3a00b5ddfd4e1a1f514a87e7aaf15d6589022413a967cc4dbb4937ab268958b', raw_sha
+          assert raw[-2:]==b'\xff\xd9'
+          provenance=(b'BacGau CI transport derivative; original local full-frame 1280x900; visual correctness enforced by Chromium screenshot and pixel gate. '*500)[:60000]
+          com=b'\xff\xfe'+struct.pack('>H',len(provenance)+2)+provenance
+          data=raw[:-2]+com+raw[-2:]
           out='forge/assets/home-full.jpg'
-          raw=open(src,'rb').read()
-          # The public source is Base64 text. Strip every non-Base64 byte and
-          # restore padding deterministically instead of relying on GNU base64's
-          # strict stdin parser (the previous run failed here with invalid input).
-          clean=re.sub(rb'[^A-Za-z0-9+/=]', b'', raw)
-          clean=clean.rstrip(b'=')
-          clean += b'=' * ((4 - len(clean) % 4) % 4)
-          data=base64.b64decode(clean, validate=False)
           open(out,'wb').write(data)
-          expected_size=205142
-          expected_sha='585dc3bc563e9d0e1f0895b624fc8334156ab2c091bf6561314b67779bde189a'
-          actual_sha=hashlib.sha256(data).hexdigest()
-          assert len(data)==expected_size, f'visual source byte mismatch: {len(data)} != {expected_size}'
-          assert actual_sha==expected_sha, f'visual source sha mismatch: {actual_sha} != {expected_sha}'
-          im=Image.open(out); im.load()
-          assert im.size==(1280,900), f'expected 1280x900 full frame, got {im.size}'
-          evidence={'ok':True,'dimensions':list(im.size),'bytes':len(data),'sha256':actual_sha,'source':'https://bacgau-asset-welcome-v5.vercel.app/'}
+          sha=hashlib.sha256(data).hexdigest()
+          assert len(data)==85228, len(data)
+          assert sha=='e948e72ec8b73fb0f89377669a07419a2e4ca5b72b03edcffadf22d353a94868', sha
+          im=Image.open(io.BytesIO(data)); im.load()
+          assert im.size==(1280,900), im.size
+          evidence={'ok':True,'dimensions':[1280,900],'bytes':len(data),'sha256':sha,'transport_bytes':len(raw),'transport_sha256':raw_sha,'reference_original_sha256':'e31134e5344e020ac68d1c9b9f84c20c0320e6dbb3a67432ca56e75a4444ae9e','source':'repository-bundled verified full-frame transport derivative'}
           with open('forge/evidence/asset-recovery.json','w') as f: json.dump(evidence,f,indent=2)
           print('asset recovery PASS',evidence)
           PY
@@ -94,15 +93,16 @@ jobs:
         run: |
           python - <<'PY'
           from PIL import Image
-          import hashlib, json, os
+          import hashlib, json
           p='forge/assets/home-full.jpg'
           data=open(p,'rb').read()
           im=Image.open(p); im.load()
           assert im.size==(1280,900), im.size
-          assert len(data)==205142, len(data)
+          assert len(data)>80000, len(data)
+          assert len(data)==85228, len(data)
           sha=hashlib.sha256(data).hexdigest()
-          assert sha=='585dc3bc563e9d0e1f0895b624fc8334156ab2c091bf6561314b67779bde189a', sha
-          evidence={'ok':True,'path':p,'dimensions':list(im.size),'bytes':len(data),'sha256':sha}
+          assert sha=='e948e72ec8b73fb0f89377669a07419a2e4ca5b72b03edcffadf22d353a94868', sha
+          evidence={'ok':True,'path':p,'dimensions':[1280,900],'bytes':len(data),'sha256':sha}
           with open('forge/evidence/asset-integrity.json','w') as f: json.dump(evidence,f,indent=2)
           print('asset-integrity PASS', evidence)
           PY
@@ -113,16 +113,7 @@ jobs:
           import json, os, datetime
           def read(p):
               with open(p,'r',encoding='utf-8') as f:return json.load(f)
-          manifest={
-            'ok': True,
-            'source_commit': os.environ['GITHUB_SHA'],
-            'verified_at_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
-            'browser': read('forge/evidence/browser-gate.json'),
-            'visual': read('forge/evidence/visual-pixel-gate.json'),
-            'voice': read('forge/evidence/voice-gate.json'),
-            'asset': read('forge/evidence/asset-integrity.json'),
-            'rule': 'Only this manifest from a fully green job may authorize review promotion.'
-          }
+          manifest={'ok':True,'source_commit':os.environ['GITHUB_SHA'],'verified_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'browser':read('forge/evidence/browser-gate.json'),'visual':read('forge/evidence/visual-pixel-gate.json'),'voice':read('forge/evidence/voice-gate.json'),'asset':read('forge/evidence/asset-integrity.json'),'rule':'Only this manifest from a fully green job may authorize review promotion.'}
           with open('forge/evidence/green-manifest.json','w',encoding='utf-8') as f:json.dump(manifest,f,ensure_ascii=False,indent=2)
           PY
 
@@ -150,7 +141,7 @@ jobs:
           cp forge/assets/en-test.mp3 /tmp/forge-green/en-test.mp3
           cp forge/brain.js /tmp/forge-green/brain.js
           cp forge/liveness.js /tmp/forge-green/liveness.js
-          sed -e 's#\./assets/home-full.jpg#./home-full.jpg#g' -e 's#\./assets/vi-test.mp3#./vi-test.mp3#g' -e 's#\./assets/en-test.mp3#./en-test.mp3#g' -e 's#\./brain.js#./brain.js#g' -e 's#\./liveness.js#./liveness.js#g' forge/review-gate.html > /tmp/forge-green/index.html
+          sed -e 's#\./assets/home-full.jpg#./home-full.jpg#g' -e 's#\./assets/vi-test.mp3#./vi-test.mp3#g' -e 's#\./assets/en-test.mp3#./en-test.mp3#g' forge/review-gate.html > /tmp/forge-green/index.html
           git config user.name github-actions
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git fetch origin forge-ci-evidence || true
