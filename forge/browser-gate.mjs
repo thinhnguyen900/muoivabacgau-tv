@@ -2,13 +2,19 @@ import { chromium } from 'playwright';
 import fs from 'node:fs';
 
 const url=process.env.FORGE_GATE_URL||'http://127.0.0.1:4173/forge/review-gate.html';
-const browser=await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-webgl','--ignore-gpu-blocklist','--autoplay-policy=no-user-gesture-required']});
+const browser=await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader','--enable-webgl','--ignore-gpu-blocklist','--autoplay-policy=no-user-gesture-required']});
 const page=await browser.newPage({viewport:{width:1920,height:1080}});
 const pageErrors=[];
 page.on('pageerror',e=>pageErrors.push(String(e)));
 page.on('console',msg=>{if(msg.type()==='error')pageErrors.push(msg.text())});
 await page.goto(url,{waitUntil:'networkidle',timeout:30000});
-await page.waitForFunction(()=>window.__BACGAU_READY__===true,{timeout:15000});
+try{
+  await page.waitForFunction(()=>window.__BACGAU_READY__===true,null,{timeout:12000});
+}catch(e){
+  const diag=await page.evaluate(()=>({status:document.querySelector('#visualStatus')?.textContent||'',canvas:!!document.querySelector('#stage canvas'),ready:window.__BACGAU_READY__===true}));
+  await page.screenshot({path:'forge/evidence/webgl-boot-failure.png',fullPage:true});
+  throw new Error(`WebGL boot timeout: ${JSON.stringify(diag)} pageErrors=${pageErrors.join(' | ')}`);
+}
 const geometry=await page.evaluate(()=>{
  const s=document.querySelector('#stage').getBoundingClientRect();
  const canvas=document.querySelector('#stage canvas');
