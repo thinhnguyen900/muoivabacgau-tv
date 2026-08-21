@@ -17,6 +17,45 @@
     "webgl": true
   },
   "states": 4,
+  "scenarioSpeech": [
+    {
+      "state": "welcoming",
+      "paused": false,
+      "currentTime": 0.787702,
+      "duration": 5.064,
+      "src": "http://127.0.0.1:4173/forge/assets/scenario-welcoming.mp3"
+    },
+    {
+      "state": "gentle",
+      "paused": false,
+      "currentTime": 0.35689,
+      "duration": 4.56,
+      "src": "http://127.0.0.1:4173/forge/assets/scenario-gentle.mp3"
+    },
+    {
+      "state": "thinking",
+      "paused": false,
+      "currentTime": 0.327945,
+      "duration": 4.56,
+      "src": "http://127.0.0.1:4173/forge/assets/scenario-thinking.mp3"
+    },
+    {
+      "state": "playful",
+      "paused": false,
+      "currentTime": 0.348004,
+      "duration": 4.488,
+      "src": "http://127.0.0.1:4173/forge/assets/scenario-playful.mp3"
+    }
+  ],
+  "body": {
+    "facialRig": true,
+    "blink": true,
+    "gaze": true,
+    "breathing": true,
+    "brows": true,
+    "jaw": true,
+    "audioDrivenMouth": true
+  },
   "render": "procedural-webgl-threejs",
   "pageErrors": []
 }
