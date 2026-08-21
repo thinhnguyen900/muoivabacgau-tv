@@ -52,12 +52,12 @@ const camera=new THREE.PerspectiveCamera(40,1,.1,100);
 camera.position.set(0,3.4,9.6);camera.lookAt(-.45,2.05,0);
 let renderer;
 try{renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});}catch(e){visualStatus.textContent='✕ WebGL renderer failed';throw e;}
-renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.02;stage.prepend(renderer.domElement);
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.98;stage.prepend(renderer.domElement);
 
-scene.add(new THREE.HemisphereLight(0xffdfc0,0x28303a,1.18));
-const key=new THREE.DirectionalLight(0xffd0a0,2.65);key.position.set(-4.6,7.2,5.8);key.castShadow=true;key.shadow.mapSize.set(1024,1024);scene.add(key);
-const fill=new THREE.PointLight(0xffb675,5.6,9,2);fill.position.set(3.8,3.6,2.1);scene.add(fill);
-const rim=new THREE.DirectionalLight(0x89a6b8,1.05);rim.position.set(4,5,-3);scene.add(rim);
+scene.add(new THREE.HemisphereLight(0xffe5ca,0x30333b,1.26));
+const key=new THREE.DirectionalLight(0xffd4aa,2.22);key.position.set(-4.6,7.2,5.8);key.castShadow=true;key.shadow.mapSize.set(1024,1024);scene.add(key);
+const fill=new THREE.PointLight(0xffbd83,4.15,9,2);fill.position.set(3.8,3.6,2.1);scene.add(fill);
+const rim=new THREE.DirectionalLight(0x9db2bd,.72);rim.position.set(4,5,-3);scene.add(rim);
 
 function mat(color,rough=.9){return new THREE.MeshStandardMaterial({color,roughness:rough,metalness:0})}
 function box(w,h,d,color,x,y,z){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(color));m.position.set(x,y,z);m.receiveShadow=true;m.castShadow=true;scene.add(m);return m}
@@ -76,47 +76,47 @@ const moon=new THREE.Mesh(new THREE.SphereGeometry(.35,24,24),new THREE.MeshBasi
 
 function createBear(){
  const g=new THREE.Group();g.position.set(-1.05,0,.12);
- const fur=0x6d4735,furMid=0x805741,furLight=0x9a6d53,muzzle=0xc39a78,muzzleShadow=0xa97e61,dark=0x2b1c15,sclera=0xf3e5d2,iris=0x6c4a2d,pupil=0x17100c;
+ const fur=0x704a37,furMid=0x815842,furLight=0x986b50,muzzle=0xbf9878,muzzleShadow=0xa67f64,dark=0x362319,browColor=0x4a3024,sclera=0xeadcca,iris=0x725038,pupil=0x17100c;
  const torso=new THREE.Group();g.add(torso);
- const body=sphere(1.18,1.52,.88,fur);body.position.y=1.52;torso.add(body);
- const belly=sphere(.72,.91,.57,furMid);belly.position.set(0,1.53,.55);torso.add(belly);
- const chest=sphere(.62,.63,.50,furLight);chest.position.set(0,2.12,.49);chest.scale.y=.78;torso.add(chest);
- const neck=sphere(.70,.48,.60,fur);neck.position.set(0,2.64,.04);torso.add(neck);
- const headRig=new THREE.Group();headRig.position.set(0,3.30,.02);g.add(headRig);
- const head=sphere(1.08,1.02,.90,fur);head.scale.x=1.02;headRig.add(head);
- const templeL=sphere(.49,.56,.35,furMid);templeL.position.set(-.47,.02,.43);headRig.add(templeL);const templeR=templeL.clone();templeR.position.x=.47;headRig.add(templeR);
- const cheekL=sphere(.46,.43,.36,furLight);cheekL.position.set(-.39,-.22,.52);headRig.add(cheekL);const cheekR=cheekL.clone();cheekR.position.x=.39;headRig.add(cheekR);
- const earL=sphere(.36,.38,.22,fur);earL.position.set(-.72,.73,-.03);earL.rotation.z=-.12;headRig.add(earL);const earR=earL.clone();earR.position.x=.72;earR.rotation.z=.12;headRig.add(earR);
- const earInL=sphere(.20,.22,.09,0xa77865);earInL.position.set(-.72,.74,.16);headRig.add(earInL);const earInR=earInL.clone();earInR.position.x=.72;headRig.add(earInR);
- const muzzlePadL=sphere(.39,.30,.30,muzzle);muzzlePadL.position.set(-.21,-.25,.72);headRig.add(muzzlePadL);const muzzlePadR=muzzlePadL.clone();muzzlePadR.position.x=.21;headRig.add(muzzlePadR);
- const lowerMuzzle=sphere(.39,.23,.27,muzzleShadow);lowerMuzzle.position.set(0,-.43,.67);headRig.add(lowerMuzzle);
- const jaw=sphere(.34,.17,.24,muzzle);jaw.position.set(0,-.49,.72);headRig.add(jaw);
- const nose=sphere(.19,.125,.115,dark,.55);nose.position.set(0,-.075,.99);nose.rotation.x=.08;headRig.add(nose);
- const bridge=sphere(.27,.20,.16,furMid);bridge.position.set(0,.03,.66);bridge.scale.y=.76;headRig.add(bridge);
+ const body=sphere(1.18,1.52,.88,fur,.96);body.position.y=1.52;torso.add(body);
+ const belly=sphere(.72,.91,.57,furMid,.98);belly.position.set(0,1.53,.55);torso.add(belly);
+ const chest=sphere(.62,.63,.50,furLight,.98);chest.position.set(0,2.12,.49);chest.scale.y=.78;torso.add(chest);
+ const neck=sphere(.73,.50,.61,fur,.97);neck.position.set(0,2.64,.02);torso.add(neck);
+ const headRig=new THREE.Group();headRig.position.set(0,3.29,.02);g.add(headRig);
+ const head=sphere(1.10,1.04,.91,fur,.95);head.scale.x=1.025;headRig.add(head);
+ const templeL=sphere(.47,.55,.34,furMid,.97);templeL.position.set(-.48,.03,.41);headRig.add(templeL);const templeR=templeL.clone();templeR.position.x=.48;headRig.add(templeR);
+ const cheekL=sphere(.43,.40,.33,furLight,.98);cheekL.position.set(-.38,-.23,.49);headRig.add(cheekL);const cheekR=cheekL.clone();cheekR.position.x=.38;headRig.add(cheekR);
+ const earL=sphere(.33,.35,.21,fur,.96);earL.position.set(-.73,.74,-.04);earL.rotation.z=-.12;headRig.add(earL);const earR=earL.clone();earR.position.x=.73;earR.rotation.z=.12;headRig.add(earR);
+ const earInL=sphere(.18,.20,.085,0xa77865,.92);earInL.position.set(-.73,.74,.15);headRig.add(earInL);const earInR=earInL.clone();earInR.position.x=.73;headRig.add(earInR);
+ const muzzlePadL=sphere(.35,.265,.255,muzzle,.94);muzzlePadL.position.set(-.19,-.255,.685);headRig.add(muzzlePadL);const muzzlePadR=muzzlePadL.clone();muzzlePadR.position.x=.19;headRig.add(muzzlePadR);
+ const lowerMuzzle=sphere(.345,.205,.245,muzzleShadow,.95);lowerMuzzle.position.set(0,-.425,.655);headRig.add(lowerMuzzle);
+ const jaw=sphere(.305,.145,.215,muzzle,.95);jaw.position.set(0,-.485,.68);headRig.add(jaw);
+ const nose=sphere(.168,.112,.105,dark,.58);nose.position.set(0,-.095,.915);nose.rotation.x=.06;headRig.add(nose);
+ const bridge=sphere(.25,.18,.145,furMid,.96);bridge.position.set(0,.015,.625);bridge.scale.y=.76;headRig.add(bridge);
 
  function eyeAssembly(x){
-   const scl=new THREE.Group();scl.position.set(x,.285,.82);headRig.add(scl);
-   const white=sphere(.175,.132,.070,sclera,.48);white.castShadow=false;scl.add(white);
-   const look=new THREE.Group();look.position.set(0,0,.064);scl.add(look);
-   const ir=sphere(.102,.096,.036,iris,.42);ir.castShadow=false;look.add(ir);
-   const pu=sphere(.055,.062,.022,pupil,.3);pu.position.z=.030;pu.castShadow=false;look.add(pu);
-   const gl=new THREE.Mesh(new THREE.SphereGeometry(.022,12,8),new THREE.MeshBasicMaterial({color:0xfffbef}));gl.position.set(-.025,.032,.056);look.add(gl);
-   const upper=sphere(.198,.067,.082,furMid);upper.position.set(x,.405,.865);headRig.add(upper);
-   const lower=sphere(.186,.042,.072,furLight);lower.position.set(x,.174,.855);headRig.add(lower);
+   const scl=new THREE.Group();scl.position.set(x,.295,.795);headRig.add(scl);
+   const white=sphere(.158,.112,.060,sclera,.52);white.castShadow=false;scl.add(white);
+   const look=new THREE.Group();look.position.set(0,0,.056);scl.add(look);
+   const ir=sphere(.108,.101,.034,iris,.44);ir.castShadow=false;look.add(ir);
+   const pu=sphere(.052,.058,.020,pupil,.32);pu.position.z=.029;pu.castShadow=false;look.add(pu);
+   const gl=new THREE.Mesh(new THREE.SphereGeometry(.020,12,8),new THREE.MeshBasicMaterial({color:0xfffbef}));gl.position.set(-.026,.030,.053);look.add(gl);
+   const upper=sphere(.188,.060,.074,furMid,.97);upper.position.set(x,.395,.835);headRig.add(upper);
+   const lower=sphere(.174,.038,.066,furLight,.98);lower.position.set(x,.192,.826);headRig.add(lower);
    return {scl,look,white,upper,lower,gl};
  }
- const eL=eyeAssembly(-.34),eR=eyeAssembly(.34);
- const browL=sphere(.225,.050,.045,dark,.78);browL.position.set(-.36,.545,.86);browL.rotation.z=.10;headRig.add(browL);
- const browR=browL.clone();browR.position.x=.36;browR.rotation.z=-.10;headRig.add(browR);
- const mouth=new THREE.Mesh(new THREE.TorusGeometry(.17,.025,12,30,Math.PI),mat(dark,.5));mouth.position.set(0,-.445,.972);mouth.rotation.z=Math.PI;headRig.add(mouth);
- const mouthCornerL=sphere(.030,.020,.018,dark,.5);mouthCornerL.position.set(-.17,-.435,.969);headRig.add(mouthCornerL);const mouthCornerR=mouthCornerL.clone();mouthCornerR.position.x=.17;headRig.add(mouthCornerR);
+ const eL=eyeAssembly(-.33),eR=eyeAssembly(.33);
+ const browL=sphere(.205,.038,.037,browColor,.84);browL.position.set(-.35,.535,.825);browL.rotation.z=.09;headRig.add(browL);
+ const browR=browL.clone();browR.position.x=.35;browR.rotation.z=-.09;headRig.add(browR);
+ const mouth=new THREE.Mesh(new THREE.TorusGeometry(.155,.021,12,30,Math.PI),mat(dark,.58));mouth.position.set(0,-.438,.905);mouth.rotation.z=Math.PI;headRig.add(mouth);
+ const mouthCornerL=sphere(.025,.017,.016,dark,.58);mouthCornerL.position.set(-.155,-.43,.902);headRig.add(mouthCornerL);const mouthCornerR=mouthCornerL.clone();mouthCornerR.position.x=.155;headRig.add(mouthCornerR);
 
- const shoulderL=sphere(.48,.44,.53,fur);shoulderL.position.set(-.89,2.13,.0);torso.add(shoulderL);const shoulderR=shoulderL.clone();shoulderR.position.x=.89;torso.add(shoulderR);
- function arm(side){const rig=new THREE.Group();rig.position.set(side*.94,2.02,.03);torso.add(rig);const upper=sphere(.31,.61,.32,fur);upper.position.set(side*.10,-.43,.02);upper.rotation.z=side*-.10;rig.add(upper);const fore=sphere(.28,.54,.29,furMid);fore.position.set(side*.19,-1.00,.11);fore.rotation.z=side*-.14;rig.add(fore);const paw=sphere(.35,.29,.36,furLight);paw.position.set(side*.24,-1.43,.18);paw.rotation.z=side*-.10;rig.add(paw);return {rig,paw}}
+ const shoulderL=sphere(.50,.45,.53,fur,.96);shoulderL.position.set(-.88,2.14,.0);torso.add(shoulderL);const shoulderR=shoulderL.clone();shoulderR.position.x=.88;torso.add(shoulderR);
+ function arm(side){const rig=new THREE.Group();rig.position.set(side*.93,2.02,.03);torso.add(rig);const upper=sphere(.32,.62,.33,fur,.96);upper.position.set(side*.10,-.43,.02);upper.rotation.z=side*-.10;rig.add(upper);const fore=sphere(.285,.55,.30,furMid,.97);fore.position.set(side*.19,-1.00,.11);fore.rotation.z=side*-.14;rig.add(fore);const paw=sphere(.36,.30,.37,furLight,.98);paw.position.set(side*.24,-1.43,.18);paw.rotation.z=side*-.10;rig.add(paw);return {rig,paw}}
  const aL=arm(-1),aR=arm(1);
- const haunchL=sphere(.50,.55,.50,fur);haunchL.position.set(-.54,.66,-.05);torso.add(haunchL);const haunchR=haunchL.clone();haunchR.position.x=.54;torso.add(haunchR);
- const footL=sphere(.43,.27,.54,furMid);footL.position.set(-.55,.22,.21);torso.add(footL);const footR=footL.clone();footR.position.x=.55;torso.add(footR);
- g.userData={torso,body,belly,chest,neck,headRig,head,armL:aL.rig,armR:aR.rig,pawL:aL.paw,pawR:aR.paw,mouth,jaw,eyeL:eL.look,eyeR:eR.look,scleraL:eL.scl,scleraR:eR.scl,upperLidL:eL.upper,upperLidR:eR.upper,lowerLidL:eL.lower,lowerLidR:eR.lower,browL,browR,mouthCornerL,mouthCornerR,blink:0,nextBlink:1.8,gazeX:0,gazeY:0,visualVersion:'v4-warm'};return g;
+ const haunchL=sphere(.50,.55,.50,fur,.97);haunchL.position.set(-.54,.66,-.05);torso.add(haunchL);const haunchR=haunchL.clone();haunchR.position.x=.54;torso.add(haunchR);
+ const footL=sphere(.43,.27,.54,furMid,.98);footL.position.set(-.55,.22,.21);torso.add(footL);const footR=footL.clone();footR.position.x=.55;torso.add(footR);
+ g.userData={torso,body,belly,chest,neck,headRig,head,armL:aL.rig,armR:aR.rig,pawL:aL.paw,pawR:aR.paw,mouth,jaw,eyeL:eL.look,eyeR:eR.look,scleraL:eL.scl,scleraR:eR.scl,upperLidL:eL.upper,upperLidR:eR.upper,lowerLidL:eL.lower,lowerLidR:eR.lower,browL,browR,mouthCornerL,mouthCornerR,blink:0,nextBlink:1.8,gazeX:0,gazeY:0,visualVersion:'v5-warm-soft'};return g;
 }
 const bear=createBear();scene.add(bear);
 function createRabbit(){const g=new THREE.Group();g.visible=false;g.position.set(5.1,0,-2.9);const fur=0x8d9498,white=0xe5ded2;const body=sphere(.5,.75,.45,fur);body.position.y=.8;g.add(body);const head=sphere(.48,.5,.43,fur);head.position.y=1.7;g.add(head);const e1=sphere(.17,.58,.12,fur);e1.position.set(-.2,2.42,0);e1.rotation.z=-.08;g.add(e1);const e2=e1.clone();e2.position.x=.2;e2.rotation.z=.08;g.add(e2);const sn=sphere(.28,.2,.18,white);sn.position.set(0,1.58,.38);g.add(sn);return g}
@@ -145,16 +145,16 @@ function animate(){
  const breath=.5+.5*Math.sin(t*1.55);
  u.torso.scale.y=1+.010*breath;u.torso.position.y=.010*breath;bear.position.y=.014*Math.sin(t*1.25);u.headRig.rotation.z=.010*Math.sin(t*.80);u.headRig.rotation.y=.014*Math.sin(t*.52);
  u.armL.rotation.z=-.06+.014*Math.sin(t*.95);u.armR.rotation.z=.06-.014*Math.sin(t*.91);
- if(t>u.nextBlink){u.blink=1;u.nextBlink=t+2.8+Math.random()*3.7}u.blink=Math.max(0,u.blink-.105);const close=Math.sin(Math.PI*u.blink);u.upperLidL.position.y=.405-.135*close;u.upperLidR.position.y=.405-.128*Math.max(0,Math.min(1,close*.94));u.lowerLidL.position.y=.174+.055*close;u.lowerLidR.position.y=.174+.052*Math.max(0,Math.min(1,close*.94));
- const targetGX=state==='thinking'?.028:state==='playful'?.020*Math.sin(t*1.8):state==='gentle'?-0.010:0;const targetGY=state==='thinking'?.018:state==='gentle'?-.010:0;u.gazeX+=(targetGX-u.gazeX)*.055;u.gazeY+=(targetGY-u.gazeY)*.055;u.eyeL.position.x=u.gazeX;u.eyeR.position.x=u.gazeX;u.eyeL.position.y=u.gazeY;u.eyeR.position.y=u.gazeY;
- const talk=speaking?(.42+.40*Math.abs(Math.sin(t*12.1))+.12*Math.abs(Math.sin(t*23.7))):0;u.mouth.scale.y=.96-.30*talk;u.jaw.position.y=-.49-.055*talk;u.jaw.scale.y=1+.12*talk;
- u.browL.rotation.z=.10;u.browR.rotation.z=-.10;u.browL.position.y=.545;u.browR.position.y=.545;u.browL.position.x=-.36;u.browR.position.x=.36;
- if(state==='welcoming'){bear.rotation.y=.055+.025*Math.sin(t*1.9);u.headRig.rotation.y=.105+.020*Math.sin(t*2.4);u.headRig.rotation.x=-.018;u.armL.rotation.z=-.30+.08*Math.sin(t*2.8);u.armR.rotation.z=.16-.04*Math.sin(t*2.4);u.browL.position.y=.585;u.browR.position.y=.585;}
- if(state==='gentle'){bear.rotation.y=.045;u.headRig.rotation.x=-.075;u.headRig.rotation.z=.040;u.armR.rotation.z=.14;u.armL.rotation.z=-.08;u.browL.rotation.z=.18;u.browR.rotation.z=-.18;u.browL.position.y=.555;u.browR.position.y=.555;u.browL.position.x=-.345;u.browR.position.x=.345;}
- if(state==='thinking'){bear.rotation.y=.015;u.headRig.rotation.z=.060+.020*Math.sin(t*1.25);u.headRig.rotation.x=-.028;u.armR.rotation.z=.34;u.armR.rotation.x=-.16;u.browL.rotation.z=.23;u.browR.rotation.z=-.05;u.browL.position.y=.575;u.browR.position.y=.535;}
- if(state==='playful'){bear.rotation.y=.065*Math.sin(t*1.8);u.headRig.rotation.y=.045*Math.sin(t*3.0);u.headRig.rotation.x=-.025+.018*Math.sin(t*2.7);u.armL.rotation.z=-.24+.10*Math.sin(t*2.8);u.armR.rotation.z=.25-.09*Math.sin(t*2.4);u.browL.position.y=.595;u.browR.position.y=.575;u.browL.rotation.z=.03;u.browR.rotation.z=-.16;rabbit.position.y=.02*Math.sin(t*3.2);}
+ if(t>u.nextBlink){u.blink=1;u.nextBlink=t+2.8+Math.random()*3.7}u.blink=Math.max(0,u.blink-.105);const close=Math.sin(Math.PI*u.blink);u.upperLidL.position.y=.395-.118*close;u.upperLidR.position.y=.395-.112*Math.max(0,Math.min(1,close*.94));u.lowerLidL.position.y=.192+.045*close;u.lowerLidR.position.y=.192+.043*Math.max(0,Math.min(1,close*.94));
+ const targetGX=state==='thinking'?.026:state==='playful'?.018*Math.sin(t*1.8):state==='gentle'?-0.009:0;const targetGY=state==='thinking'?.016:state==='gentle'?-.009:0;u.gazeX+=(targetGX-u.gazeX)*.055;u.gazeY+=(targetGY-u.gazeY)*.055;u.eyeL.position.x=u.gazeX;u.eyeR.position.x=u.gazeX;u.eyeL.position.y=u.gazeY;u.eyeR.position.y=u.gazeY;
+ const talk=speaking?(.42+.40*Math.abs(Math.sin(t*12.1))+.12*Math.abs(Math.sin(t*23.7))):0;u.mouth.scale.y=.96-.28*talk;u.jaw.position.y=-.485-.050*talk;u.jaw.scale.y=1+.10*talk;
+ u.browL.rotation.z=.09;u.browR.rotation.z=-.09;u.browL.position.y=.535;u.browR.position.y=.535;u.browL.position.x=-.35;u.browR.position.x=.35;
+ if(state==='welcoming'){bear.rotation.y=.055+.025*Math.sin(t*1.9);u.headRig.rotation.y=.105+.020*Math.sin(t*2.4);u.headRig.rotation.x=-.018;u.armL.rotation.z=-.30+.08*Math.sin(t*2.8);u.armR.rotation.z=.16-.04*Math.sin(t*2.4);u.browL.position.y=.575;u.browR.position.y=.575;}
+ if(state==='gentle'){bear.rotation.y=.045;u.headRig.rotation.x=-.075;u.headRig.rotation.z=.040;u.armR.rotation.z=.14;u.armL.rotation.z=-.08;u.browL.rotation.z=.17;u.browR.rotation.z=-.17;u.browL.position.y=.545;u.browR.position.y=.545;u.browL.position.x=-.34;u.browR.position.x=.34;}
+ if(state==='thinking'){bear.rotation.y=.015;u.headRig.rotation.z=.060+.020*Math.sin(t*1.25);u.headRig.rotation.x=-.028;u.armR.rotation.z=.34;u.armR.rotation.x=-.16;u.browL.rotation.z=.21;u.browR.rotation.z=-.045;u.browL.position.y=.565;u.browR.position.y=.528;}
+ if(state==='playful'){bear.rotation.y=.065*Math.sin(t*1.8);u.headRig.rotation.y=.045*Math.sin(t*3.0);u.headRig.rotation.x=-.025+.018*Math.sin(t*2.7);u.armL.rotation.z=-.24+.10*Math.sin(t*2.8);u.armR.rotation.z=.25-.09*Math.sin(t*2.4);u.browL.position.y=.585;u.browR.position.y=.565;u.browL.rotation.z=.025;u.browR.rotation.z=-.15;rabbit.position.y=.02*Math.sin(t*3.2);}
  if(state==='listening'){bear.rotation.y*=.92;u.headRig.rotation.x*=.92;u.headRig.rotation.y*=.94;u.headRig.rotation.z*=.96;u.armR.rotation.x*=.9;}
- renderer.render(scene,camera);frames++;if(frames===2){window.__BACGAU_READY__=true;window.__BACGAU_BODY_V2__={facialRig:true,blink:true,gaze:true,breathing:true,brows:true,jaw:true,audioDrivenMouth:true,visualVersion:'v4-warm',scleraIrisPupil:true,softArmRig:true,cinematicToneMap:true};visualStatus.innerHTML='<span class="ok">✓ WebGL 3D runtime rendered · warm character v4 · facial rig · scenario speech</span>';stateDump.textContent=JSON.stringify(plan,null,2)}requestAnimationFrame(animate);
+ renderer.render(scene,camera);frames++;if(frames===2){window.__BACGAU_READY__=true;window.__BACGAU_BODY_V2__={facialRig:true,blink:true,gaze:true,breathing:true,brows:true,jaw:true,audioDrivenMouth:true,visualVersion:'v5-warm-soft',scleraIrisPupil:true,softArmRig:true,cinematicToneMap:true,eyeWhiteReduced:true,muzzleIntegrated:true,softBrow:true};visualStatus.innerHTML='<span class="ok">✓ WebGL 3D runtime rendered · warm character v5 · softer face · scenario speech</span>';stateDump.textContent=JSON.stringify(plan,null,2)}requestAnimationFrame(animate);
 }
 animate();
 </script>
