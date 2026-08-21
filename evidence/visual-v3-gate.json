@@ -1,5 +1,6 @@
 {
   "ok": true,
+  "visualVersion": "v4-warm",
   "url": "http://127.0.0.1:4173/forge/review-gate-v3.html",
   "geometry": {
     "stage": {
@@ -16,12 +17,22 @@
     },
     "webgl": true
   },
+  "body": {
+    "facialRig": true,
+    "scleraIrisPupil": true,
+    "eyelids": true,
+    "softBrows": true,
+    "splitMuzzle": true,
+    "roundedArms": true,
+    "cinematicLighting": true,
+    "audioDrivenMouth": true
+  },
   "states": [
     {
       "state": "welcoming",
       "audio": {
         "paused": false,
-        "currentTime": 1.962562,
+        "currentTime": 1.666393,
         "duration": 5.064,
         "src": "http://127.0.0.1:4173/forge/assets/scenario-welcoming.mp3"
       },
@@ -31,7 +42,7 @@
       "state": "gentle",
       "audio": {
         "paused": false,
-        "currentTime": 1.950581,
+        "currentTime": 1.573857,
         "duration": 4.56,
         "src": "http://127.0.0.1:4173/forge/assets/scenario-gentle.mp3"
       },
@@ -41,7 +52,7 @@
       "state": "thinking",
       "audio": {
         "paused": false,
-        "currentTime": 1.989639,
+        "currentTime": 1.632983,
         "duration": 4.56,
         "src": "http://127.0.0.1:4173/forge/assets/scenario-thinking.mp3"
       },
@@ -51,7 +62,7 @@
       "state": "playful",
       "audio": {
         "paused": false,
-        "currentTime": 1.963571,
+        "currentTime": 1.515862,
         "duration": 4.488,
         "src": "http://127.0.0.1:4173/forge/assets/scenario-playful.mp3"
       },
