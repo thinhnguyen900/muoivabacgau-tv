@@ -3,18 +3,78 @@ on:
   push:
     branches: [phase2-forge]
   workflow_dispatch:
+
 jobs:
-  regress:
+  forge-gates:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Production brain regression
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install media and QA dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          python -m pip install --upgrade pip
+          pip install edge-tts pillow
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+          mkdir -p forge/assets forge/evidence
+
+      - name: Generate explicit locale-bound neural voice fixtures
+        run: |
+          edge-tts --voice vi-VN-NamMinhNeural --text "Bác nghe đây, Muối. Hôm nay con có chuyện gì vui không?" --write-media forge/assets/vi-test.mp3
+          edge-tts --voice en-US-GuyNeural --text "Hello Muối. I am listening. What was the best part of your day?" --write-media forge/assets/en-test.mp3
+          python forge/voice-gate.py
+
+      - name: Production brain regression (200+ real cases)
         run: node forge/simulate.js
+
       - name: Living-character planner regression
         run: node forge/liveness.test.js
+
       - name: Active runtime contract regression
         run: node forge/runtime-contract.test.js
+
+      - name: Serve forge gate
+        run: |
+          python -m http.server 4173 --bind 127.0.0.1 > /tmp/bacgau-http.log 2>&1 &
+          echo $! > /tmp/bacgau-http.pid
+          for i in {1..20}; do curl -fsS http://127.0.0.1:4173/forge/review-gate.html >/dev/null && break; sleep 0.5; done
+
+      - name: Real Chromium screenshot, interaction and audio playback gate
+        env:
+          FORGE_GATE_URL: http://127.0.0.1:4173/forge/review-gate.html
+        run: node forge/browser-gate.mjs
+
+      - name: Screenshot pixel regression gate
+        run: python forge/visual-pixel-gate.py
+
+      - name: Asset integrity gate
+        run: |
+          test $(stat -c%s forge/assets/home-full.jpg) -gt 100000
+          python - <<'PY'
+          from PIL import Image
+          p='forge/assets/home-full.jpg'
+          im=Image.open(p); im.load()
+          assert im.size==(1280,900), im.size
+          print('asset-integrity PASS', im.size)
+          PY
+
+      - name: Upload forge QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bacgau-forge-qa-evidence
+          path: |
+            forge/evidence/
+            forge/assets/vi-test.mp3
+            forge/assets/en-test.mp3
+          if-no-files-found: warn
