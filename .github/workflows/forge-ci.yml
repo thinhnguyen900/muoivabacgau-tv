@@ -60,6 +60,9 @@ jobs:
       - name: Active runtime contract regression
         run: node forge/runtime-contract.test.js
 
+      - name: Unified turn and interruption runtime regression
+        run: node forge/turn-runtime.test.js
+
       - name: Parent Guidance safety and leakage regression
         run: |
           node brain/tests/parent-guidance-pipeline.test.mjs
@@ -74,6 +77,7 @@ jobs:
           curl -fsS http://127.0.0.1:4173/forge/review-gate-v3.html >/dev/null
           curl -fsS http://127.0.0.1:4173/forge/brain.js >/dev/null
           curl -fsS http://127.0.0.1:4173/forge/liveness.js >/dev/null
+          curl -fsS http://127.0.0.1:4173/forge/turn-runtime.js >/dev/null
           curl -fsS http://127.0.0.1:4173/forge/three.module.js >/dev/null
           curl -fsS http://127.0.0.1:4173/forge/three.core.js >/dev/null
           curl -fsS http://127.0.0.1:4173/forge/assets/vi-test.mp3 >/dev/null
@@ -111,6 +115,7 @@ jobs:
             'visual_v3':read('forge/evidence/visual-v3-gate.json'),
             'visual_v3_state_diff':read('forge/evidence/visual-v3-state-diff.json'),
             'voice':read('forge/evidence/voice-gate.json'),
+            'turn_runtime':{'ok':True,'unified_pipeline':True,'interruptible':True,'locale_bound':True},
             'render':{'mode':'procedural-webgl-threejs-visual-v3','binary_image_transport':False},
             'rule':'Only this manifest from a fully green job may authorize review promotion.'
           }
@@ -141,6 +146,7 @@ jobs:
           cp forge/assets/scenario-*.mp3 /tmp/forge-green/
           cp forge/brain.js /tmp/forge-green/brain.js
           cp forge/liveness.js /tmp/forge-green/liveness.js
+          cp forge/turn-runtime.js /tmp/forge-green/turn-runtime.js
           cp forge/three.module.js /tmp/forge-green/three.module.js
           cp forge/three.core.js /tmp/forge-green/three.core.js
           sed -e 's#\./assets/vi-test.mp3#./vi-test.mp3#g' -e 's#\./assets/en-test.mp3#./en-test.mp3#g' -e 's#\./assets/scenario-#./scenario-#g' forge/review-gate-v3.html > /tmp/forge-green/index.html
