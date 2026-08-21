@@ -21,28 +21,28 @@
     {
       "state": "welcoming",
       "paused": false,
-      "currentTime": 0.928128,
+      "currentTime": 1.388431,
       "duration": 5.064,
       "src": "http://127.0.0.1:4173/forge/assets/scenario-welcoming.mp3"
     },
     {
       "state": "gentle",
       "paused": false,
-      "currentTime": 0.456881,
+      "currentTime": 0.572272,
       "duration": 4.56,
       "src": "http://127.0.0.1:4173/forge/assets/scenario-gentle.mp3"
     },
     {
       "state": "thinking",
       "paused": false,
-      "currentTime": 0.108136,
+      "currentTime": 0.528693,
       "duration": 4.56,
       "src": "http://127.0.0.1:4173/forge/assets/scenario-thinking.mp3"
     },
     {
       "state": "playful",
       "paused": false,
-      "currentTime": 0.542609,
+      "currentTime": 0.776132,
       "duration": 4.488,
       "src": "http://127.0.0.1:4173/forge/assets/scenario-playful.mp3"
     }
@@ -54,7 +54,11 @@
     "breathing": true,
     "brows": true,
     "jaw": true,
-    "audioDrivenMouth": true
+    "audioDrivenMouth": true,
+    "visualVersion": "v4-warm",
+    "scleraIrisPupil": true,
+    "softArmRig": true,
+    "cinematicToneMap": true
   },
   "render": "procedural-webgl-threejs",
   "pageErrors": []
