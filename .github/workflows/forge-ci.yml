@@ -30,8 +30,10 @@ jobs:
           npm install --no-save playwright@1.55.0 three@0.180.0
           npx playwright install --with-deps chromium
           cp node_modules/three/build/three.module.js forge/three.module.js
+          cp node_modules/three/build/three.core.js forge/three.core.js
           mkdir -p forge/assets forge/evidence
           test -s forge/three.module.js
+          test -s forge/three.core.js
           grep -q "./three.module.js" forge/review-gate.html
 
       - name: Generate explicit locale-bound neural voice fixtures
@@ -55,11 +57,17 @@ jobs:
           node brain/tests/parent-guidance.sim.mjs
           node brain/tests/brain-to-body.test.mjs
 
-      - name: Serve forge gate
+      - name: Serve forge gate and verify every runtime resource
         run: |
           python -m http.server 4173 --bind 127.0.0.1 > /tmp/bacgau-http.log 2>&1 &
           echo $! > /tmp/bacgau-http.pid
           for i in {1..20}; do curl -fsS http://127.0.0.1:4173/forge/review-gate.html >/dev/null && break; sleep 0.5; done
+          curl -fsS http://127.0.0.1:4173/forge/brain.js >/dev/null
+          curl -fsS http://127.0.0.1:4173/forge/liveness.js >/dev/null
+          curl -fsS http://127.0.0.1:4173/forge/three.module.js >/dev/null
+          curl -fsS http://127.0.0.1:4173/forge/three.core.js >/dev/null
+          curl -fsS http://127.0.0.1:4173/forge/assets/vi-test.mp3 >/dev/null
+          curl -fsS http://127.0.0.1:4173/forge/assets/en-test.mp3 >/dev/null
 
       - name: Real Chromium WebGL, interaction and audio playback gate
         env:
@@ -111,6 +119,7 @@ jobs:
           cp forge/brain.js /tmp/forge-green/brain.js
           cp forge/liveness.js /tmp/forge-green/liveness.js
           cp forge/three.module.js /tmp/forge-green/three.module.js
+          cp forge/three.core.js /tmp/forge-green/three.core.js
           sed -e 's#\./assets/vi-test.mp3#./vi-test.mp3#g' -e 's#\./assets/en-test.mp3#./en-test.mp3#g' forge/review-gate.html > /tmp/forge-green/index.html
           git config user.name github-actions
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
