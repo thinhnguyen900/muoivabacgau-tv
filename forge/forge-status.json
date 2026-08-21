@@ -1,12 +1,12 @@
 {
-  "build": "forge-7-corrective-visual-voice",
+  "build": "forge-8-asset-truth",
   "reviewable": false,
   "completed_gates": {
     "brain_simulation": {
       "latest_completed_production_conversation_batch": {"executions": 550, "passed": 550, "failed": 0, "distinct_categories": 21},
       "cumulative_production_conversation_executions": 1903,
       "latest_runtime_batch": {"conversation_turns": 240, "assertions": 902, "passed": 902, "failed": 0},
-      "cumulative_note": "Production Brain totals remain separate from runtime/liveness assertion counts. The corrective CI reruns node forge/simulate.js after visual/voice wiring."
+      "cumulative_note": "Production Brain totals remain separate from runtime/liveness assertion counts."
     },
     "living_character_planner": {
       "latest_stress": {"executions": 200, "passed": 200, "failed": 0},
@@ -17,12 +17,12 @@
       "interruptibility": "distress interrupts stop speech, acknowledge within <=100ms planning budget, force gentle mode, and do not auto-resume",
       "gentle_world_policy": "suppress-nonessential"
     },
-    "visual_asset_replacement": {
-      "path": "forge/assets/home-full.jpg",
+    "source_visual_verified_outside_repo": {
       "dimensions": [1280, 900],
-      "bytes": 104686,
-      "source": "full user-supplied 1280x900 Bác Gấu reference recompressed as full-frame JPEG",
-      "old_13kb_partial_asset_rejected": true
+      "bytes": 205142,
+      "sha256": "585dc3bc563e9d0e1f0895b624fc8334156ab2c091bf6561314b67779bde189a",
+      "q65_candidate_bytes": 110367,
+      "q65_candidate_sha256": "a56a1148299bab4ace57ced4951aa13b25d463fec387d3c19e5de3c14d172da5"
     },
     "runtime_audio_contract": {
       "explicit_locales": ["vi-VN", "en-US"],
@@ -37,7 +37,7 @@
       "pixel_gate": "forge/visual-pixel-gate.py",
       "voice_gate": "forge/voice-gate.py",
       "review_gate": "forge/review-gate.html",
-      "expected_evidence": ["forge-gate-1920x1080.png", "browser-gate.json", "visual-pixel-gate.json", "voice-gate.json", "vi-test.mp3", "en-test.mp3"]
+      "green_evidence_branch": "forge-ci-evidence"
     },
     "brain_body_mapping": ["welcoming", "listening", "thinking", "gentle", "playful"],
     "safety_parent_guidance": true,
@@ -48,18 +48,19 @@
     "parent_safety_override_guard": true
   },
   "blocked_gates": {
-    "ci_evidence_confirmation": "Corrective GitHub Actions workflow has been committed and is push-triggered, but this automation environment cannot retrieve push-triggered workflow-run status/check artifacts through the available GitHub connector. Therefore the screenshot/voice gates are not being claimed as passed yet.",
-    "voice_asr": "The corrective gate verifies exact vi-VN/en-US neural ShortName+Locale metadata, exact language fixture text, ffprobe duration and real Chromium playback. It does not claim independent ASR transcription because no trustworthy ASR service is available in this run.",
-    "production_character_body": "Current Body is still 2D/2.5D performance architecture rather than a mature stylized 3D rig matching the visual bar.",
-    "review_promotion": "Not promoted until CI produces green Chromium screenshot/pixel, locale-bound voice, browser playback, interaction, runtime, safety and production conversation regression evidence."
+    "repo_visual_asset_integrity": "BLOCKED: the current forge/assets/home-full.jpg in GitHub is still only about 14.6 KB after attempted binary transfer. This is explicitly treated as corrupt/incomplete and must not be used for review. The prior status claiming ~104 KB was a false positive and has been corrected here.",
+    "ci_green_evidence": "No forge-ci-evidence branch exists yet, so the Chromium screenshot/pixel/voice/playback gates are not green and are not being claimed as passed.",
+    "voice_asr": "Exact vi-VN/en-US neural ShortName+Locale metadata plus Chromium playback prevents the prior English-voice-on-Vietnamese bug, but independent ASR/listening quality is still not established in this run.",
+    "production_character_body": "Current Body remains 2D/2.5D performance architecture rather than a mature stylized 3D rig matching the final aesthetic bar.",
+    "review_promotion": "BLOCKED. No parent review URL may be promoted until a verified full-frame source asset is present and CI produces green screenshot/pixel, voice locale/playback, interaction, Brain->Body, safety and 200+ production conversation evidence."
   },
   "red_team_findings_fixed_or_guarded": [
-    "The partial 13KB visual surrogate is no longer the corrective visual source.",
-    "NaturalWidth/decoded dimensions are no longer sufficient for visual PASS; a real 1920x1080 Chromium screenshot plus pixel-uniformity analysis is mandatory.",
-    "Audio duration alone is no longer sufficient for voice PASS; exact neural voice locale metadata and browser playback are mandatory.",
+    "Repository byte size/hash is now part of asset truth; status metadata may not override the actual Git tree.",
+    "NaturalWidth/decoded dimensions are insufficient for visual PASS; real Chromium screenshot plus pixel-uniformity analysis remains mandatory.",
+    "Audio duration alone is insufficient for voice PASS; exact neural voice locale metadata and real browser playback remain mandatory.",
     "Vietnamese and English use separate explicit neural voice identities.",
     "Active app consumes the liveness planner and distress interruption contract.",
     "Previous safety, parent-guidance leakage, memory, language routing and reply-variety guards remain preserved."
   ],
-  "next_priority": "Obtain and inspect the corrective CI artifacts. Only if screenshot, pixel, vi-VN/en-US voice, playback, interaction, Brain->Body, safety and 200+ production conversation gates are green should a review URL be deployed/promoted."
+  "next_priority": "Transfer the verified full-frame visual asset without truncation, allow CI to publish immutable green evidence, inspect the actual screenshot and voice evidence, then deploy only a build that passes all gates."
 }
