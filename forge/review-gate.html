@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bác Gấu Forge Visual Voice Gate</title>
+<style>
+html,body{margin:0;background:#100e0b;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Arial;height:100%}.app{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;padding:16px;box-sizing:border-box}.stage{position:relative;overflow:hidden;border-radius:24px;background:#1b1712;min-height:calc(100vh - 32px)}.stage img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block}.badge{position:absolute;left:20px;top:20px;padding:10px 14px;border-radius:999px;background:#120f0ccc;font-weight:800}.bubble{position:absolute;left:24px;right:24px;bottom:24px;background:#120f0cdd;border-radius:18px;padding:16px 18px;font-size:22px}.side{background:#211b15;border-radius:24px;padding:20px}.side h1{margin-top:0}.gate{padding:12px;border-radius:14px;background:#ffffff0a;margin:10px 0}.ok{color:#8fd197}button{width:100%;padding:14px;border:0;border-radius:14px;background:#e0b568;font-weight:800;font-size:16px;margin:8px 0;cursor:pointer}audio{width:100%;margin:8px 0 16px}.state{font-family:ui-monospace,Consolas,monospace;font-size:13px;color:#cdbfae;white-space:pre-wrap}@media(max-width:900px){.app{grid-template-columns:1fr}.stage{min-height:65vh}}
+</style>
+</head>
+<body>
+<div class="app">
+  <section class="stage" id="stage">
+    <img id="hero" src="./assets/home-full.jpg" alt="Bác Gấu đón Muối về nhà">
+    <div class="badge" id="badge">FORGE CORRECTIVE · visual/voice gate</div>
+    <div class="bubble" id="bubble">Bác nghe đây, Muối.</div>
+  </section>
+  <aside class="side">
+    <h1>Bác Gấu Phase 2</h1>
+    <div class="gate" id="visualStatus">Visual: waiting for browser verification</div>
+    <button id="viBtn">🔊 Test tiếng Việt</button>
+    <audio id="viAudio" controls preload="auto" src="./assets/vi-test.mp3"></audio>
+    <button id="enBtn">🔊 Test English</button>
+    <audio id="enAudio" controls preload="auto" src="./assets/en-test.mp3"></audio>
+    <button data-state="welcoming">🏠 Muối về</button>
+    <button data-state="gentle">😔 Con buồn</button>
+    <button data-state="thinking">🤔 Hỏi khó</button>
+    <button data-state="playful">🦖 Khủng long</button>
+    <div class="state" id="stateDump">state=listening</div>
+  </aside>
+</div>
+<script src="./brain.js"></script>
+<script src="./liveness.js"></script>
+<script>
+const hero=document.getElementById('hero'), bubble=document.getElementById('bubble'), stateDump=document.getElementById('stateDump');
+hero.addEventListener('load',()=>visualStatus.innerHTML='<span class="ok">✓ asset loaded in browser</span>');
+hero.addEventListener('error',()=>visualStatus.textContent='✕ visual asset failed');
+viBtn.onclick=()=>{viAudio.currentTime=0;viAudio.play()};
+enBtn.onclick=()=>{enAudio.currentTime=0;enAudio.play()};
+const stateText={welcoming:'Muối về rồi hả? Bác mừng con về.',gentle:'Ừ, bác nghe đây. Con kể từ từ cũng được.',thinking:'Hừm… câu này hay đó. Bác nghĩ một chút nha.',playful:'Ồ, khủng long hả? Bác tò mò rồi đó!'};
+document.querySelectorAll('[data-state]').forEach(btn=>btn.onclick=()=>{const k=btn.dataset.state; const p=BacGauLiveness.plan({performance:k,turn:Date.now()%1000,text:k,speaking:true}); bubble.textContent=stateText[k]; stateDump.textContent=JSON.stringify(p,null,2); stage.dataset.state=k;});
+</script>
+</body>
+</html>
