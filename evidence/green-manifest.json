@@ -1,7 +1,7 @@
 {
   "ok": true,
-  "source_commit": "ca643b2ddadb1bd3ac1ee1286b0f0cb3d3bf5b3e",
-  "verified_at_utc": "2026-08-21T11:56:08.441848+00:00",
+  "source_commit": "86493cb114decc19f78ce6121f239004223f7acf",
+  "verified_at_utc": "2026-08-21T12:20:13.855838+00:00",
   "browser": {
     "ok": true,
     "url": "http://127.0.0.1:4173/forge/review-gate.html",
@@ -25,28 +25,28 @@
       {
         "state": "welcoming",
         "paused": false,
-        "currentTime": 0.559406,
+        "currentTime": 0.794373,
         "duration": 5.064,
         "src": "http://127.0.0.1:4173/forge/assets/scenario-welcoming.mp3"
       },
       {
         "state": "gentle",
         "paused": false,
-        "currentTime": 0.315244,
+        "currentTime": 0.310257,
         "duration": 4.56,
         "src": "http://127.0.0.1:4173/forge/assets/scenario-gentle.mp3"
       },
       {
         "state": "thinking",
         "paused": false,
-        "currentTime": 0.401886,
+        "currentTime": 0.321201,
         "duration": 4.56,
         "src": "http://127.0.0.1:4173/forge/assets/scenario-thinking.mp3"
       },
       {
         "state": "playful",
         "paused": false,
-        "currentTime": 0.010533,
+        "currentTime": 0.303501,
         "duration": 4.488,
         "src": "http://127.0.0.1:4173/forge/assets/scenario-playful.mp3"
       }
@@ -66,9 +66,9 @@
   "visual": {
     "ok": true,
     "grayish_fraction": 0.0014375,
-    "dominant_bucket_fraction": 0.2924375,
-    "mean_channel_stddev": 25.758365727440744,
-    "quantized_entropy_bits": 4.572748380962104,
+    "dominant_bucket_fraction": 0.29075,
+    "mean_channel_stddev": 25.770936312857703,
+    "quantized_entropy_bits": 4.580161302618745,
     "crop_size": [
       1482,
       1048
