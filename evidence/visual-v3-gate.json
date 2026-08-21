@@ -1,0 +1,62 @@
+{
+  "ok": true,
+  "url": "http://127.0.0.1:4173/forge/review-gate-v3.html",
+  "geometry": {
+    "stage": {
+      "x": 16,
+      "y": 16,
+      "w": 1482,
+      "h": 1048
+    },
+    "canvas": {
+      "x": 16,
+      "y": 16,
+      "w": 1482,
+      "h": 1048
+    },
+    "webgl": true
+  },
+  "states": [
+    {
+      "state": "welcoming",
+      "audio": {
+        "paused": false,
+        "currentTime": 1.517402,
+        "duration": 5.064,
+        "src": "http://127.0.0.1:4173/forge/assets/scenario-welcoming.mp3"
+      },
+      "screenshot": "forge/evidence/visual-v3-welcoming.png"
+    },
+    {
+      "state": "gentle",
+      "audio": {
+        "paused": false,
+        "currentTime": 1.537442,
+        "duration": 4.56,
+        "src": "http://127.0.0.1:4173/forge/assets/scenario-gentle.mp3"
+      },
+      "screenshot": "forge/evidence/visual-v3-gentle.png"
+    },
+    {
+      "state": "thinking",
+      "audio": {
+        "paused": false,
+        "currentTime": 1.507188,
+        "duration": 4.56,
+        "src": "http://127.0.0.1:4173/forge/assets/scenario-thinking.mp3"
+      },
+      "screenshot": "forge/evidence/visual-v3-thinking.png"
+    },
+    {
+      "state": "playful",
+      "audio": {
+        "paused": false,
+        "currentTime": 1.523476,
+        "duration": 4.488,
+        "src": "http://127.0.0.1:4173/forge/assets/scenario-playful.mp3"
+      },
+      "screenshot": "forge/evidence/visual-v3-playful.png"
+    }
+  ],
+  "pageErrors": []
+}
