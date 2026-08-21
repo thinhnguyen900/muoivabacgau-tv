@@ -40,7 +40,15 @@ jobs:
         run: |
           edge-tts --voice vi-VN-NamMinhNeural --text "Bác nghe đây, Muối. Hôm nay con có chuyện gì vui không?" --write-media forge/assets/vi-test.mp3
           edge-tts --voice en-US-GuyNeural --text "Hello Muối. I am listening. What was the best part of your day?" --write-media forge/assets/en-test.mp3
+          edge-tts --voice vi-VN-NamMinhNeural --text "Ủa! Muối về rồi à? Bác mừng con về." --write-media forge/assets/scenario-welcoming.mp3
+          edge-tts --voice vi-VN-NamMinhNeural --text "Ừ, bác nghe đây. Con kể từ từ cũng được." --write-media forge/assets/scenario-gentle.mp3
+          edge-tts --voice vi-VN-NamMinhNeural --text "Hừm, câu này hay đó. Bác nghĩ một chút nha." --write-media forge/assets/scenario-thinking.mp3
+          edge-tts --voice vi-VN-NamMinhNeural --text "Ồ, khủng long hả? Bác tò mò rồi đó!" --write-media forge/assets/scenario-playful.mp3
           python forge/voice-gate.py
+          for f in forge/assets/scenario-*.mp3; do
+            test -s "$f"
+            ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$f" | awk '{if ($1 <= 0) exit 1}'
+          done
 
       - name: Production brain regression (200+ real cases)
         run: node forge/simulate.js
@@ -68,6 +76,7 @@ jobs:
           curl -fsS http://127.0.0.1:4173/forge/three.core.js >/dev/null
           curl -fsS http://127.0.0.1:4173/forge/assets/vi-test.mp3 >/dev/null
           curl -fsS http://127.0.0.1:4173/forge/assets/en-test.mp3 >/dev/null
+          for f in scenario-welcoming scenario-gentle scenario-thinking scenario-playful; do curl -fsS "http://127.0.0.1:4173/forge/assets/${f}.mp3" >/dev/null; done
 
       - name: Real Chromium WebGL, interaction and audio playback gate
         env:
@@ -105,6 +114,7 @@ jobs:
             forge/evidence/
             forge/assets/vi-test.mp3
             forge/assets/en-test.mp3
+            forge/assets/scenario-*.mp3
           if-no-files-found: warn
 
       - name: Publish green review bundle to dedicated branch
@@ -116,11 +126,12 @@ jobs:
           cp -r forge/evidence/* /tmp/forge-green/
           cp forge/assets/vi-test.mp3 /tmp/forge-green/vi-test.mp3
           cp forge/assets/en-test.mp3 /tmp/forge-green/en-test.mp3
+          cp forge/assets/scenario-*.mp3 /tmp/forge-green/
           cp forge/brain.js /tmp/forge-green/brain.js
           cp forge/liveness.js /tmp/forge-green/liveness.js
           cp forge/three.module.js /tmp/forge-green/three.module.js
           cp forge/three.core.js /tmp/forge-green/three.core.js
-          sed -e 's#\./assets/vi-test.mp3#./vi-test.mp3#g' -e 's#\./assets/en-test.mp3#./en-test.mp3#g' forge/review-gate.html > /tmp/forge-green/index.html
+          sed -e 's#\./assets/vi-test.mp3#./vi-test.mp3#g' -e 's#\./assets/en-test.mp3#./en-test.mp3#g' -e 's#\./assets/scenario-#./scenario-#g' forge/review-gate.html > /tmp/forge-green/index.html
           git config user.name github-actions
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git fetch origin forge-ci-evidence || true
