@@ -1,12 +1,12 @@
 {
-  "build": "forge-7",
+  "build": "forge-7-corrective-visual-voice",
   "reviewable": false,
   "completed_gates": {
     "brain_simulation": {
       "latest_completed_production_conversation_batch": {"executions": 550, "passed": 550, "failed": 0, "distinct_categories": 21},
       "cumulative_production_conversation_executions": 1903,
       "latest_runtime_batch": {"conversation_turns": 240, "assertions": 902, "passed": 902, "failed": 0},
-      "cumulative_note": "Production Brain totals remain separate from runtime/liveness assertion counts."
+      "cumulative_note": "Production Brain totals remain separate from runtime/liveness assertion counts. The corrective CI reruns node forge/simulate.js after visual/voice wiring."
     },
     "living_character_planner": {
       "latest_stress": {"executions": 200, "passed": 200, "failed": 0},
@@ -17,10 +17,27 @@
       "interruptibility": "distress interrupts stop speech, acknowledge within <=100ms planning budget, force gentle mode, and do not auto-resume",
       "gentle_world_policy": "suppress-nonessential"
     },
+    "visual_asset_replacement": {
+      "path": "forge/assets/home-full.jpg",
+      "dimensions": [1280, 900],
+      "bytes": 104686,
+      "source": "full user-supplied 1280x900 Bác Gấu reference recompressed as full-frame JPEG",
+      "old_13kb_partial_asset_rejected": true
+    },
     "runtime_audio_contract": {
       "explicit_locales": ["vi-VN", "en-US"],
+      "vi_voice_required": "vi-VN-NamMinhNeural",
+      "en_voice_required": "en-US-GuyNeural",
       "locale_mismatch_fail_closed": true,
       "browser_or_windows_voice_fallback": false
+    },
+    "qa_infrastructure_added": {
+      "workflow": ".github/workflows/forge-ci.yml",
+      "browser_gate": "forge/browser-gate.mjs",
+      "pixel_gate": "forge/visual-pixel-gate.py",
+      "voice_gate": "forge/voice-gate.py",
+      "review_gate": "forge/review-gate.html",
+      "expected_evidence": ["forge-gate-1920x1080.png", "browser-gate.json", "visual-pixel-gate.json", "voice-gate.json", "vi-test.mp3", "en-test.mp3"]
     },
     "brain_body_mapping": ["welcoming", "listening", "thinking", "gentle", "playful"],
     "safety_parent_guidance": true,
@@ -31,19 +48,18 @@
     "parent_safety_override_guard": true
   },
   "blocked_gates": {
-    "chromium_render": "User-observed v7 evidence shows the visual can report valid 1280x900 metadata while rendering mostly gray/incomplete. Metadata/decode is therefore explicitly insufficient; full browser visual assertion remains blocked.",
-    "voice_quality": "User-observed v7 evidence shows the Vietnamese test clip sounded English-accented/wrong-locale. Runtime now fails closed on locale mismatch, but a verified warm natural adult-male vi-VN/en-US TTS source is still missing.",
+    "ci_evidence_confirmation": "Corrective GitHub Actions workflow has been committed and is push-triggered, but this automation environment cannot retrieve push-triggered workflow-run status/check artifacts through the available GitHub connector. Therefore the screenshot/voice gates are not being claimed as passed yet.",
+    "voice_asr": "The corrective gate verifies exact vi-VN/en-US neural ShortName+Locale metadata, exact language fixture text, ffprobe duration and real Chromium playback. It does not claim independent ASR transcription because no trustworthy ASR service is available in this run.",
     "production_character_body": "Current Body is still 2D/2.5D performance architecture rather than a mature stylized 3D rig matching the visual bar.",
-    "review_promotion": "Not promoted. v7 gate is quarantined from review because both visual completeness and Vietnamese voice quality failed in the actual parent browser."
+    "review_promotion": "Not promoted until CI produces green Chromium screenshot/pixel, locale-bound voice, browser playback, interaction, runtime, safety and production conversation regression evidence."
   },
   "red_team_findings_fixed_or_guarded": [
-    "Active app now consumes the liveness planner instead of leaving it disconnected from runtime.",
-    "Distress interruption is wired into active runtime speech behavior.",
-    "Wrong-locale audio is blocked rather than played.",
-    "Windows/browser speech synthesis is not used as a fallback in the active forge runtime.",
-    "JPEG dimensions and positive audio duration can no longer be treated as sufficient review evidence.",
+    "The partial 13KB visual surrogate is no longer the corrective visual source.",
+    "NaturalWidth/decoded dimensions are no longer sufficient for visual PASS; a real 1920x1080 Chromium screenshot plus pixel-uniformity analysis is mandatory.",
+    "Audio duration alone is no longer sufficient for voice PASS; exact neural voice locale metadata and browser playback are mandatory.",
+    "Vietnamese and English use separate explicit neural voice identities.",
+    "Active app consumes the liveness planner and distress interruption contract.",
     "Previous safety, parent-guidance leakage, memory, language routing and reply-variety guards remain preserved."
   ],
-  "latest_evidence_file": "forge/test-evidence-run-07.json",
-  "next_priority": "Replace the defective visual source with a full-frame verified character asset/rig, integrate verified natural vi-VN/en-US TTS, then deploy and require real browser screenshot/render plus language-quality verification before parent review."
+  "next_priority": "Obtain and inspect the corrective CI artifacts. Only if screenshot, pixel, vi-VN/en-US voice, playback, interaction, Brain->Body, safety and 200+ production conversation gates are green should a review URL be deployed/promoted."
 }
