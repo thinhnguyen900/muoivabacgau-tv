@@ -1,18 +1,18 @@
 {
   "ok": true,
   "grayish_fraction": 0.0013125,
-  "dominant_bucket_fraction": 0.305125,
-  "mean_channel_stddev": 27.75021978911717,
-  "quantized_entropy_bits": 4.625161248860012,
+  "dominant_bucket_fraction": 0.2244375,
+  "mean_channel_stddev": 25.565349125964257,
+  "quantized_entropy_bits": 4.6449787177262865,
   "crop_size": [
     1482,
     1048
   ],
   "core": {
     "grayish_fraction": 0.0,
-    "dominant_bucket_fraction": 0.32229166666666664,
-    "mean_channel_stddev": 26.976048919695838,
-    "quantized_entropy_bits": 4.430341871213244,
+    "dominant_bucket_fraction": 0.24083333333333334,
+    "mean_channel_stddev": 24.0892564129455,
+    "quantized_entropy_bits": 4.625076730153149,
     "crop_size": [
       1007,
       839
