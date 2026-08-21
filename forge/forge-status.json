@@ -1,39 +1,21 @@
 {
-  "build": "forge-10-ci-recovery-fix",
+  "build": "forge-webgl-living-gate-v1",
   "reviewable": false,
-  "completed_gates": {
-    "brain_simulation": {
-      "latest_completed_production_conversation_batch": {"executions": 550, "passed": 550, "failed": 0, "distinct_categories": 21},
-      "cumulative_production_conversation_executions": 1903,
-      "latest_runtime_batch": {"conversation_turns": 240, "assertions": 902, "passed": 902, "failed": 0}
-    },
-    "living_character_planner": {
-      "latest_stress": {"executions": 200, "passed": 200, "failed": 0},
-      "runtime_wired": true,
-      "states": ["welcoming", "listening", "thinking", "gentle", "playful"]
-    },
-    "runtime_audio_contract": {
-      "explicit_locales": ["vi-VN", "en-US"],
-      "vi_voice_required": "vi-VN-NamMinhNeural",
-      "en_voice_required": "en-US-GuyNeural",
-      "browser_or_windows_voice_fallback": false
-    }
+  "architecture_change": {
+    "body_render": "procedural WebGL/Three.js runtime",
+    "binary_image_transport": false,
+    "reason": "Remove the repeated JPEG/Base64/Vercel transport failure class entirely and test the same live 3D runtime the child-facing experience will use."
   },
-  "last_verified_failure": {
-    "workflow_run": 32445993158,
-    "job": 96665548124,
-    "step": "Recover verified full-frame visual from repository transport chunks",
-    "error": "binascii.Error: Incorrect padding",
-    "root_cause": "The five repository Base64 transport chunks were truncated during prior text transfer, so their concatenation was shorter than the expected complete encoded JPEG."
+  "completed_pre_ci_gates": {
+    "brain_simulation": {"executions": 550, "passed": 550, "failed": 0, "distinct_categories": 21},
+    "living_character_planner": {"executions": 200, "passed": 200, "failed": 0},
+    "runtime_audio_contract": {"vi_voice_required": "vi-VN-NamMinhNeural", "en_voice_required": "en-US-GuyNeural", "browser_voice_fallback": false},
+    "parent_guidance_regressions": true
   },
-  "fixed_now": {
-    "ci_visual_recovery": "Removed the truncated transport-chunk dependency and the prior artificial JPEG COM byte inflation. CI now fetches the dedicated /home.jpg asset endpoint, decodes it, requires a real Pillow-decodable 1280x900 image larger than 80 KB, records its SHA-256, and later requires the same SHA at the integrity gate.",
-    "parent_guidance_gate": "Added explicit parent-guidance pipeline, simulation, and Brain-to-Body regression tests before browser promotion.",
-    "visual_truth": "Chromium screenshot plus pixel regression remains mandatory; image dimensions or byte count alone cannot promote the build."
+  "current_ci_gate": {
+    "required": ["neural voice generation", "brain regression", "liveness regression", "runtime contract", "parent guidance safety", "Chromium WebGL render", "four visible body states", "audio playback", "pixel regression"],
+    "promotion_rule": "No review URL is promoted until every required gate is green in the same workflow run."
   },
-  "blocked_gates": {
-    "ci_green_evidence": "A new run is required after this corrective commit. No review URL is promoted until visual, voice, browser, runtime, Brain, safety, and Parent Guidance gates are all green.",
-    "production_character_body": "Current Body remains 2D/2.5D rather than the final mature stylized 3D rig."
-  },
-  "next_priority": "Trigger CI from phase2-forge, inspect the next real failing step if any, fix and rerun until the green evidence bundle is published."
+  "last_failure_class_removed": "external/static image transport",
+  "next_priority": "Run the complete WebGL vertical slice and fix the next real failing gate immediately until a green evidence bundle is published."
 }
