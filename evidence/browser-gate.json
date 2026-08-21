@@ -21,28 +21,28 @@
     {
       "state": "welcoming",
       "paused": false,
-      "currentTime": 0.758154,
+      "currentTime": 0.559406,
       "duration": 5.064,
       "src": "http://127.0.0.1:4173/forge/assets/scenario-welcoming.mp3"
     },
     {
       "state": "gentle",
       "paused": false,
-      "currentTime": 0.370774,
+      "currentTime": 0.315244,
       "duration": 4.56,
       "src": "http://127.0.0.1:4173/forge/assets/scenario-gentle.mp3"
     },
     {
       "state": "thinking",
       "paused": false,
-      "currentTime": 0.374932,
+      "currentTime": 0.401886,
       "duration": 4.56,
       "src": "http://127.0.0.1:4173/forge/assets/scenario-thinking.mp3"
     },
     {
       "state": "playful",
       "paused": false,
-      "currentTime": 0.699804,
+      "currentTime": 0.010533,
       "duration": 4.488,
       "src": "http://127.0.0.1:4173/forge/assets/scenario-playful.mp3"
     }
