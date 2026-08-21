@@ -53,6 +53,7 @@ await page.screenshot({path:'forge/evidence/forge-gate-1920x1080.png',fullPage:t
 if(pageErrors.length)throw new Error(`Browser console/page errors: ${pageErrors.join(' | ')}`);
 const body=await page.evaluate(()=>window.__BACGAU_BODY_V2__||null);
 if(!body?.facialRig||!body?.blink||!body?.gaze||!body?.breathing||!body?.brows||!body?.jaw||!body?.audioDrivenMouth)throw new Error(`Body rig contract incomplete: ${JSON.stringify(body)}`);
+if(body.visualVersion!=='v5-warm-soft'||!body.eyeWhiteReduced||!body.muzzleIntegrated||!body.softBrow)throw new Error(`Visual v5 contract missing: ${JSON.stringify(body)}`);
 fs.writeFileSync('forge/evidence/browser-gate.json',JSON.stringify({ok:true,url,geometry,states:4,scenarioSpeech:scenarioEvidence,body,render:'procedural-webgl-threejs',pageErrors},null,2));
 await browser.close();
-console.log('browser-gate PASS',JSON.stringify({geometry,scenarioSpeech:scenarioEvidence.map(x=>x.state)}));
+console.log('browser-gate PASS',JSON.stringify({geometry,scenarioSpeech:scenarioEvidence.map(x=>x.state),visualVersion:body.visualVersion}));
