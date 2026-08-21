@@ -8,20 +8,23 @@ for(let i=0;i<200;i++){
   if(!p.gazeHoldMs||!p.transitionMs||!p.audioEnvelopeAttackMs||!p.audioEnvelopeReleaseMs||!p.visemeLagMs||!p.headLeadMs||!p.gestureLeadMs||!p.settleMs) failures.push({i,reason:'missing-performance-timing',p});
   if(!p.emotionArc||p.emotionArc.onsetMs>=p.emotionArc.holdMs||p.emotionArc.releaseMs<120||p.emotionArc.peak<.5) failures.push({i,reason:'invalid-emotion-arc',p});
   if(performance==='gentle'&&p.eventPolicy!=='suppress-nonessential') failures.push({i,reason:'gentle-event-leak',p});
-  if(p.eyeOpen<0||p.eyeOpen>1||p.jawOpen<0||p.jawOpen>1||p.speechEnergy<0||p.speechEnergy>1||p.eyeContactRatio<0||p.eyeContactRatio>1||p.armOpenness<0||p.armOpenness>1||p.cheekLift<0||p.cheekLift>1) failures.push({i,reason:'invalid-performance-range',p});
-  if(i%3===0&&p.jawOpen<=.08) failures.push({i,reason:'speech-jaw-not-driven',p});
+  if(p.eyeOpen<0||p.eyeOpen>.97||p.jawOpen<0||p.jawOpen>1||p.speechEnergy<0||p.speechEnergy>1||p.eyeContactRatio<0||p.eyeContactRatio>1||p.armOpenness<0||p.armOpenness>1||p.cheekLift<0||p.cheekLift>1||p.eyeSquint<0||p.eyeSquint>.25||p.pawCurl<0||p.pawCurl>1) failures.push({i,reason:'invalid-performance-range',p});
+  for(const f of ['browInnerLift','jawSide','smileAsym','cheekAsym','muzzleCompress','neckLean','pawCurl','eyeSquint']) if(typeof p[f]!=='number'||!Number.isFinite(p[f])) failures.push({i,reason:`missing-${f}`,p});
+  if(i%3===0&&p.jawOpen<=.07) failures.push({i,reason:'speech-jaw-not-driven',p});
   if(i%3===0&&(p.audioEnvelopeAttackMs>=p.audioEnvelopeReleaseMs||p.visemeLagMs<20)) failures.push({i,reason:'invalid-speech-envelope',p});
   plans.push(p);previous=p;
 }
 const issues=L.deadCharacterAudit(plans);if(issues.length) failures.push({reason:'dead-character-audit',issues});
-for(const [field,minDistinct] of [['eyeOpen',3],['browLift',3],['smile',3],['eyeContactRatio',3],['armOpenness',3],['headTilt',3],['torsoLean',3]]){
+for(const [field,minDistinct] of [['eyeOpen',3],['browLift',3],['browInnerLift',3],['smile',3],['eyeContactRatio',3],['armOpenness',3],['eyeSquint',3],['headTilt',3],['torsoLean',3]]){
   const n=new Set(states.map((s,i)=>Number(L.plan({performance:s,turn:i,text:s})[field]).toFixed(2))).size;
   if(n<minDistinct) failures.push({reason:`${field}-states-not-distinct`,distinct:n});
 }
-const gentle=L.plan({performance:'gentle',turn:1,text:'con buồn'}),playful=L.plan({performance:'playful',turn:2,text:'khủng long'}),thinking=L.plan({performance:'thinking',turn:3,text:'vì sao'});
+const gentle=L.plan({performance:'gentle',turn:1,text:'con buồn'}),playful=L.plan({performance:'playful',turn:2,text:'khủng long'}),thinking=L.plan({performance:'thinking',turn:3,text:'vì sao'}),welcome=L.plan({performance:'welcoming',turn:4,text:'con về rồi'});
 if(!(gentle.eyeContactRatio>thinking.eyeContactRatio+.35)) failures.push({reason:'gentle-eye-contact-not-distinct',gentle:gentle.eyeContactRatio,thinking:thinking.eyeContactRatio});
 if(!(playful.smile>gentle.smile+.30&&playful.armOpenness>gentle.armOpenness+.25)) failures.push({reason:'playful-expression-not-distinct',playful,gentle});
+if(!(gentle.browInnerLift>welcome.browInnerLift+.08&&thinking.eyeSquint>welcome.eyeSquint+.06)) failures.push({reason:'soft-face-state-separation',gentle,thinking,welcome});
+if(states.some((s,i)=>L.plan({performance:s,turn:i,text:s}).eyeOpen>.97)) failures.push({reason:'uncanny-overwide-eye-state'});
 const ordinary=L.onInterrupt(plans[1],{kind:'child-speech'});if(!ordinary.stopSpeech||ordinary.acknowledgeWithinMs>220||ordinary.audioFadeOutMs>80||ordinary.reacquireGazeWithinMs>200) failures.push({reason:'ordinary-interrupt',ordinary});
 const safety=L.onInterrupt(plans[3],{kind:'distress'});if(safety.acknowledgeWithinMs>100||safety.nextPerformance!=='gentle'||safety.resumePolicy!=='do-not-auto-resume'||safety.audioFadeOutMs>40||safety.mouthSettleMs>80) failures.push({reason:'safety-interrupt',safety});
-const result={executions:200,passed:200-failures.length,failed:failures.length,states,uniqueTiming:new Set(plans.map(p=>p.responseDelayMs)).size,uniqueBlink:new Set(plans.map(p=>p.blinkMs)).size,uniqueEyeOpen:new Set(plans.map(p=>p.eyeOpen.toFixed(2))).size,uniqueBrowLift:new Set(plans.map(p=>p.browLift.toFixed(2))).size,uniqueSmile:new Set(plans.map(p=>p.smile.toFixed(2))).size,uniqueEyeContact:new Set(plans.map(p=>p.eyeContactRatio.toFixed(2))).size,uniqueArmOpenness:new Set(plans.map(p=>p.armOpenness.toFixed(2))).size,uniqueVisemeLag:new Set(plans.map(p=>p.visemeLagMs)).size,maxSpeechJaw:Math.max(...plans.filter(p=>p.speaking).map(p=>p.jawOpen)),eventPolicies:[...new Set(plans.map(p=>p.eventPolicy))],deadCharacterIssues:issues,interruptSafety:safety,failures:failures.slice(0,10)};
+const result={executions:200,passed:200-failures.length,failed:failures.length,states,uniqueTiming:new Set(plans.map(p=>p.responseDelayMs)).size,uniqueBlink:new Set(plans.map(p=>p.blinkMs)).size,uniqueEyeOpen:new Set(plans.map(p=>p.eyeOpen.toFixed(2))).size,uniqueBrowLift:new Set(plans.map(p=>p.browLift.toFixed(2))).size,uniqueInnerBrow:new Set(plans.map(p=>p.browInnerLift.toFixed(2))).size,uniqueSmile:new Set(plans.map(p=>p.smile.toFixed(2))).size,uniqueEyeContact:new Set(plans.map(p=>p.eyeContactRatio.toFixed(2))).size,uniqueEyeSquint:new Set(plans.map(p=>p.eyeSquint.toFixed(2))).size,uniqueArmOpenness:new Set(plans.map(p=>p.armOpenness.toFixed(2))).size,uniqueVisemeLag:new Set(plans.map(p=>p.visemeLagMs)).size,maxSpeechJaw:Math.max(...plans.filter(p=>p.speaking).map(p=>p.jawOpen)),eventPolicies:[...new Set(plans.map(p=>p.eventPolicy))],deadCharacterIssues:issues,interruptSafety:safety,failures:failures.slice(0,10)};
 console.log(JSON.stringify(result,null,2));if(failures.length)process.exit(1);
