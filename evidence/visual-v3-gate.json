@@ -32,7 +32,7 @@
       "state": "welcoming",
       "audio": {
         "paused": false,
-        "currentTime": 1.962788,
+        "currentTime": 1.885527,
         "duration": 5.064,
         "src": "http://127.0.0.1:4173/forge/assets/scenario-welcoming.mp3"
       },
@@ -42,7 +42,7 @@
       "state": "gentle",
       "audio": {
         "paused": false,
-        "currentTime": 1.975624,
+        "currentTime": 1.889856,
         "duration": 4.56,
         "src": "http://127.0.0.1:4173/forge/assets/scenario-gentle.mp3"
       },
@@ -52,7 +52,7 @@
       "state": "thinking",
       "audio": {
         "paused": false,
-        "currentTime": 1.924031,
+        "currentTime": 1.842906,
         "duration": 4.56,
         "src": "http://127.0.0.1:4173/forge/assets/scenario-thinking.mp3"
       },
@@ -62,7 +62,7 @@
       "state": "playful",
       "audio": {
         "paused": false,
-        "currentTime": 1.930951,
+        "currentTime": 1.902257,
         "duration": 4.488,
         "src": "http://127.0.0.1:4173/forge/assets/scenario-playful.mp3"
       },
