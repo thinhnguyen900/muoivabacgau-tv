@@ -21,7 +21,10 @@ const gentle=L.plan({performance:'gentle',turn:999,text:'Con buồn'});
 const intr=L.onInterrupt(gentle,{kind:'distress'});
 ok('distress-stop',intr.stopSpeech===true&&intr.nextPerformance==='gentle'&&intr.acknowledgeWithinMs<=100&&intr.resumePolicy==='do-not-auto-resume',intr);
 ok('gentle-world-suppression',gentle.eventPolicy==='suppress-nonessential',gentle);
-const plans=['welcoming','listening','thinking','gentle','playful'].flatMap((p,i)=>Array.from({length:20},(_,j)=>L.plan({performance:p,turn:i*20+j,text:p+j,previous:null,speaking:j%2===0})));
+let chainPrev=null;const plans=[];
+for(const [i,p] of ['welcoming','listening','thinking','gentle','playful'].entries()){
+ for(let j=0;j<20;j++){const q=L.plan({performance:p,turn:i*20+j,text:p+j,previous:chainPrev,speaking:j%2===0});plans.push(q);chainPrev=q}
+}
 const audit=L.deadCharacterAudit(plans);
 ok('dead-character-audit',audit.length===0,{audit});
 const clipLang={home:'vi-VN',listen:'vi-VN',sad:'vi-VN',think:'vi-VN',english:'en-US'};
