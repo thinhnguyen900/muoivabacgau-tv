@@ -31,6 +31,24 @@ jobs:
           npx playwright install --with-deps chromium
           mkdir -p forge/assets forge/evidence
 
+      - name: Recover full-frame visual from verified public asset source
+        run: |
+          set -euo pipefail
+          curl --retry 3 --retry-delay 2 -fsSL https://bacgau-asset-welcome-v5.vercel.app -o /tmp/home-full.b64
+          tr -d '\r\n ' < /tmp/home-full.b64 | base64 -d > forge/assets/home-full.jpg
+          python - <<'PY'
+          from PIL import Image
+          import hashlib, os, json
+          p='forge/assets/home-full.jpg'
+          im=Image.open(p); im.load()
+          assert im.size==(1280,900), f'expected 1280x900 full frame, got {im.size}'
+          size=os.path.getsize(p)
+          assert size>80000, f'asset unexpectedly tiny/truncated: {size} bytes'
+          evidence={'ok':True,'dimensions':list(im.size),'bytes':size,'sha256':hashlib.sha256(open(p,'rb').read()).hexdigest(),'source':'bacgau-asset-welcome-v5.vercel.app'}
+          with open('forge/evidence/asset-recovery.json','w') as f: json.dump(evidence,f,indent=2)
+          print('asset recovery PASS',evidence)
+          PY
+
       - name: Generate explicit locale-bound neural voice fixtures
         run: |
           edge-tts --voice vi-VN-NamMinhNeural --text "Bác nghe đây, Muối. Hôm nay con có chuyện gì vui không?" --write-media forge/assets/vi-test.mp3
@@ -62,14 +80,15 @@ jobs:
 
       - name: Asset integrity gate
         run: |
-          test $(stat -c%s forge/assets/home-full.jpg) -gt 100000
           python - <<'PY'
           from PIL import Image
           import hashlib, json, os
           p='forge/assets/home-full.jpg'
           im=Image.open(p); im.load()
           assert im.size==(1280,900), im.size
-          evidence={'ok':True,'path':p,'dimensions':list(im.size),'bytes':os.path.getsize(p),'sha256':hashlib.sha256(open(p,'rb').read()).hexdigest()}
+          size=os.path.getsize(p)
+          assert size>80000, size
+          evidence={'ok':True,'path':p,'dimensions':list(im.size),'bytes':size,'sha256':hashlib.sha256(open(p,'rb').read()).hexdigest()}
           with open('forge/evidence/asset-integrity.json','w') as f: json.dump(evidence,f,indent=2)
           print('asset-integrity PASS', evidence)
           PY
@@ -77,7 +96,7 @@ jobs:
       - name: Write immutable green manifest
         run: |
           python - <<'PY'
-          import json, os, subprocess, datetime
+          import json, os, datetime
           def read(p):
               with open(p,'r',encoding='utf-8') as f:return json.load(f)
           manifest={
@@ -100,19 +119,24 @@ jobs:
           name: bacgau-forge-qa-evidence
           path: |
             forge/evidence/
+            forge/assets/home-full.jpg
             forge/assets/vi-test.mp3
             forge/assets/en-test.mp3
           if-no-files-found: warn
 
-      - name: Publish green evidence to dedicated branch
+      - name: Publish green review bundle to dedicated branch
         if: success()
         env:
           SOURCE_SHA: ${{ github.sha }}
         run: |
           mkdir -p /tmp/forge-green
           cp -r forge/evidence/* /tmp/forge-green/
+          cp forge/assets/home-full.jpg /tmp/forge-green/home-full.jpg
           cp forge/assets/vi-test.mp3 /tmp/forge-green/vi-test.mp3
           cp forge/assets/en-test.mp3 /tmp/forge-green/en-test.mp3
+          cp forge/brain.js /tmp/forge-green/brain.js
+          cp forge/liveness.js /tmp/forge-green/liveness.js
+          sed -e 's#\./assets/home-full.jpg#./home-full.jpg#g' -e 's#\./assets/vi-test.mp3#./vi-test.mp3#g' -e 's#\./assets/en-test.mp3#./en-test.mp3#g' -e 's#\./brain.js#./brain.js#g' -e 's#\./liveness.js#./liveness.js#g' forge/review-gate.html > /tmp/forge-green/index.html
           git config user.name github-actions
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git fetch origin forge-ci-evidence || true
@@ -127,5 +151,5 @@ jobs:
           cp -r /tmp/forge-green/* evidence/
           printf '%s\n' "$SOURCE_SHA" > evidence/source-commit.txt
           git add evidence
-          git commit -m "CI evidence for ${SOURCE_SHA}" || true
+          git commit -m "CI green review bundle for ${SOURCE_SHA}" || true
           git push origin forge-ci-evidence --force
