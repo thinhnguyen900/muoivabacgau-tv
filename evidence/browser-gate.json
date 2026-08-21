@@ -1,0 +1,22 @@
+{
+  "ok": true,
+  "url": "http://127.0.0.1:4173/forge/review-gate.html",
+  "geometry": {
+    "stage": {
+      "x": 16,
+      "y": 16,
+      "w": 1482,
+      "h": 1048
+    },
+    "canvas": {
+      "x": 16,
+      "y": 16,
+      "w": 1482,
+      "h": 1048
+    },
+    "webgl": true
+  },
+  "states": 4,
+  "render": "procedural-webgl-threejs",
+  "pageErrors": []
+}

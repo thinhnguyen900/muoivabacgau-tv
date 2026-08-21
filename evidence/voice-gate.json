@@ -1,0 +1,23 @@
+{
+  "ok": true,
+  "vi": {
+    "voice": "vi-VN-NamMinhNeural",
+    "locale": "vi-VN",
+    "gender": "Male",
+    "text": "Bác nghe đây, Muối. Hôm nay con có chuyện gì vui không?",
+    "file": "forge/assets/vi-test.mp3",
+    "duration_seconds": 5.088,
+    "bytes": 30528
+  },
+  "en": {
+    "voice": "en-US-GuyNeural",
+    "locale": "en-US",
+    "gender": "Male",
+    "text": "Hello Muối. I am listening. What was the best part of your day?",
+    "file": "forge/assets/en-test.mp3",
+    "duration_seconds": 6.24,
+    "bytes": 37440
+  },
+  "verification": "exact neural voice locale metadata + exact text fixture + ffprobe + Chromium playback",
+  "asr_note": "No external ASR service is trusted in this gate; wrong-locale synthesis is prevented before generation by exact ShortName/Locale assertion."
+}
