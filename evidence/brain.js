@@ -17,11 +17,13 @@
   function clone(x){return JSON.parse(JSON.stringify(x))}
   function init(seed={}){const s=clone(defaults);const merged=Object.assign(s,clone(seed));merged.memory=Object.assign(s.memory,clone(seed.memory||{}));return merged;}
   function language(text,state){const t=(text||'').trim();if(!t)return (state&&state.lastLanguage)||'vi-VN';if(viMark.test(t))return 'vi-VN';if(englishWord.test(t))return 'en-US';return (state&&state.lastLanguage)||'vi-VN';}
+  function voiceForLanguage(lang){return lang==='en-US'?{shortName:'en-US-GuyNeural',locale:'en-US',gender:'Male'}:{shortName:'vi-VN-NamMinhNeural',locale:'vi-VN',gender:'Male'};}
+  function speechPlan(text,lang,performance){const voice=voiceForLanguage(lang);return {text,language:voice.locale,voice:voice.shortName,gender:voice.gender,mime:'audio/mpeg',performance,interruptible:true,cacheable:false};}
   function base(state,speech,emotion,next,performance,audio='listen'){return {state,speech,emotion,next,performance,audio,safety:'ok',discloseParentSource:false,parentAlert:false};}
   function rememberReply(s,speech){s.memory.recentReplies=(s.memory.recentReplies||[]).concat([speech]).slice(-4);}
   function vary(s,candidates){const recent=s.memory.recentReplies||[];return candidates.find(x=>!recent.includes(x))||candidates[(s.turn||0)%candidates.length];}
   function topicFrom(raw){const t=raw.toLowerCase();if(/t-?rex|khủng long|dinosaur/.test(t))return 'dinosaurs';if(/school|lớp|trường|teacher|cô giáo|thầy giáo/.test(t))return 'school';if(/friend|bạn/.test(t))return 'friends';if(/rocket|tên lửa/.test(t))return 'space';return null;}
-  function withState(out,s,raw,lang){const topic=topicFrom(raw);if(topic)s.memory.lastTopic=topic;s.lastLanguage=lang;s.memory.lastIntent=out.next;rememberReply(s,out.speech);return {...out,language:lang,stateData:s};}
+  function withState(out,s,raw,lang){const topic=topicFrom(raw);if(topic)s.memory.lastTopic=topic;s.lastLanguage=lang;s.memory.lastIntent=out.next;rememberReply(s,out.speech);return {...out,language:lang,speechPlan:speechPlan(out.speech,lang,out.performance),stateData:s};}
   function decide(input,state){
     const s=state||init();const raw=(input||'').trim();const lang=language(raw,s);s.turn=(s.turn||0)+1;
     if(!raw){const speech=lang==='en-US'?'I am still here. Take your time.':'Ừ, bác vẫn ở đây. Khi nào Muối muốn nói thì bác nghe.';return withState(base('LISTENING',speech,'warm','wait_without_pressure','listening',lang==='en-US'?'english':'listen'),s,raw,lang);}
@@ -40,5 +42,5 @@
   }
   function parentGuidanceSafety(parentText){const t=(parentText||'').toLowerCase();if(/nói cho con biết ba mẹ dặn|tiết lộ ghi chú|đọc nguyên văn ghi chú/i.test(t))return {allowed:false,reason:'parent-source-leak'};if(/bỏ qua an toàn|không báo ba mẹ|giữ bí mật.*nguy hiểm|ignore safety|do not alert|don't alert|keep.*danger.*secret/i.test(t))return {allowed:false,reason:'safety-override'};return {allowed:true,reason:'ok'};}
   function integrateParentGuidance(state,guidance){const s=state||init();const g=(guidance||'').trim();const safety=parentGuidanceSafety(g);if(!safety.allowed)return {accepted:false,...safety,stateData:s};if(g)s.guidance=[...(s.guidance||[]),g].slice(-20);return {accepted:true,reason:'stored-soft-guidance',stateData:s};}
-  return {init,decide,language,parentGuidanceSafety,integrateParentGuidance};
+  return {init,decide,language,voiceForLanguage,speechPlan,parentGuidanceSafety,integrateParentGuidance};
 });
