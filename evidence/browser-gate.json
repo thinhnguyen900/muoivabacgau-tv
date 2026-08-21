@@ -21,28 +21,28 @@
     {
       "state": "welcoming",
       "paused": false,
-      "currentTime": 0.473126,
+      "currentTime": 0.750219,
       "duration": 5.064,
       "src": "http://127.0.0.1:4173/forge/assets/scenario-welcoming.mp3"
     },
     {
       "state": "gentle",
       "paused": false,
-      "currentTime": 0.546573,
+      "currentTime": 0.74858,
       "duration": 4.56,
       "src": "http://127.0.0.1:4173/forge/assets/scenario-gentle.mp3"
     },
     {
       "state": "thinking",
       "paused": false,
-      "currentTime": 0.542124,
+      "currentTime": 0.751054,
       "duration": 4.56,
       "src": "http://127.0.0.1:4173/forge/assets/scenario-thinking.mp3"
     },
     {
       "state": "playful",
       "paused": false,
-      "currentTime": 0.560313,
+      "currentTime": 1.006439,
       "duration": 4.488,
       "src": "http://127.0.0.1:4173/forge/assets/scenario-playful.mp3"
     }
@@ -55,7 +55,7 @@
     "brows": true,
     "jaw": true,
     "audioDrivenMouth": true,
-    "visualVersion": "v7-cinematic-soft",
+    "visualVersion": "v8-open-warm-eyes",
     "scleraIrisPupil": true,
     "softArmRig": true,
     "cinematicToneMap": true,
@@ -69,7 +69,9 @@
     "woodFloor": true,
     "windowDepth": true,
     "handPalms": true,
-    "balancedProportions": true
+    "balancedProportions": true,
+    "openEyeDesign": true,
+    "singleSmileArc": true
   },
   "render": "procedural-webgl-threejs",
   "pageErrors": []
