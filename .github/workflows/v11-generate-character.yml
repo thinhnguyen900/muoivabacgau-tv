@@ -35,12 +35,21 @@ jobs:
         run: test -n "$TRIPO_API_KEY"
 
       - name: Generate mature mentor rigged GLB with Tripo
+        id: generate
         working-directory: v11
         env:
           TRIPO_API_KEY: ${{ secrets.TRIPO_API_KEY }}
-        run: node scripts/generate-tripo.mjs reference/bacgau-mature-reference.jpg public/character
+        shell: bash
+        run: |
+          set +e
+          node scripts/generate-tripo.mjs reference/bacgau-mature-reference.jpg public/character 2>&1 | tee public/character/generation.log
+          status=${PIPESTATUS[0]}
+          echo "$status" > public/character/generation-status.txt
+          exit "$status"
+        continue-on-error: true
 
       - name: Validate generated GLB
+        if: steps.generate.outcome == 'success'
         run: |
           test -s v11/public/character/bac-gau.glb
           test -s v11/public/character/generation-manifest.json
@@ -48,12 +57,29 @@ jobs:
           cat v11/public/character/generation-manifest.json
           find v11/public/character/animations -maxdepth 1 -type f -name '*.glb' -print 2>/dev/null || true
 
-      - name: Commit generated character outputs onto latest branch
+      - name: Sanitize diagnostic log
+        if: always()
+        shell: bash
+        run: |
+          if [ -f v11/public/character/generation.log ]; then
+            sed -E 's/(Bearer )[A-Za-z0-9._-]+/\1[REDACTED]/g; s#https://[^ ]*X-Amz-[^ ]*#[PRESIGNED_URL_REDACTED]#g' v11/public/character/generation.log > /tmp/generation.log.safe
+            mv /tmp/generation.log.safe v11/public/character/generation.log
+          fi
+
+      - name: Commit generation outputs or diagnostics onto latest branch
+        if: always()
+        shell: bash
         run: |
           git config user.name github-actions
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add v11/public/character/bac-gau.glb v11/public/character/generation-manifest.json
+          git add v11/public/character/generation.log v11/public/character/generation-status.txt 2>/dev/null || true
+          if [ -s v11/public/character/bac-gau.glb ]; then git add v11/public/character/bac-gau.glb; fi
+          if [ -s v11/public/character/generation-manifest.json ]; then git add v11/public/character/generation-manifest.json; fi
           if [ -d v11/public/character/animations ]; then git add v11/public/character/animations; fi
-          git commit -m 'chore(v11): generate mature mentor Bác Gấu GLB [skip ci]' || exit 0
+          git commit -m 'chore(v11): record Tripo generation result [skip ci]' || exit 0
           git pull --rebase origin v11-rigged-character
           git push origin HEAD:v11-rigged-character
+
+      - name: Fail workflow if generation failed
+        if: steps.generate.outcome != 'success'
+        run: exit 1
