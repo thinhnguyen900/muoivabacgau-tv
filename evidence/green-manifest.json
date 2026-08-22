@@ -1,7 +1,7 @@
 {
   "ok": true,
-  "source_commit": "2623c98062dfab8eeda530cb11512dba15f4690d",
-  "verified_at_utc": "2026-08-22T10:08:18.623879+00:00",
+  "source_commit": "0e15a92ffb6355b29c2d23d1a927f26ad99ba965",
+  "verified_at_utc": "2026-08-22T12:06:28.011910+00:00",
   "browser": {
     "ok": true,
     "url": "http://127.0.0.1:4173/forge/review-gate.html",
@@ -25,28 +25,28 @@
       {
         "state": "welcoming",
         "paused": false,
-        "currentTime": 0.065366,
+        "currentTime": 0.030685,
         "duration": 5.064,
         "src": "http://127.0.0.1:4173/forge/assets/scenario-welcoming.mp3"
       },
       {
         "state": "gentle",
         "paused": false,
-        "currentTime": 1.883053,
+        "currentTime": 0.966283,
         "duration": 4.56,
         "src": "http://127.0.0.1:4173/forge/assets/scenario-gentle.mp3"
       },
       {
         "state": "thinking",
         "paused": false,
-        "currentTime": 1.886753,
+        "currentTime": 1.270976,
         "duration": 4.56,
         "src": "http://127.0.0.1:4173/forge/assets/scenario-thinking.mp3"
       },
       {
         "state": "playful",
         "paused": false,
-        "currentTime": 1.644687,
+        "currentTime": 1.28862,
         "duration": 4.488,
         "src": "http://127.0.0.1:4173/forge/assets/scenario-playful.mp3"
       }
@@ -87,18 +87,18 @@
   "visual": {
     "ok": true,
     "grayish_fraction": 0.00075,
-    "dominant_bucket_fraction": 0.2766875,
-    "mean_channel_stddev": 28.05234146625551,
-    "quantized_entropy_bits": 4.309417517015048,
+    "dominant_bucket_fraction": 0.275375,
+    "mean_channel_stddev": 28.060440536582338,
+    "quantized_entropy_bits": 4.315082161070077,
     "crop_size": [
       1482,
       1048
     ],
     "core": {
       "grayish_fraction": 0.0,
-      "dominant_bucket_fraction": 0.3361458333333333,
-      "mean_channel_stddev": 27.884866573276454,
-      "quantized_entropy_bits": 3.9901182601361387,
+      "dominant_bucket_fraction": 0.33666666666666667,
+      "mean_channel_stddev": 27.904684657155453,
+      "quantized_entropy_bits": 3.998350696216194,
       "crop_size": [
         1007,
         839
@@ -139,7 +139,7 @@
         "state": "welcoming",
         "audio": {
           "paused": false,
-          "currentTime": 2.022059,
+          "currentTime": 1.7384,
           "duration": 5.064,
           "src": "http://127.0.0.1:4173/forge/assets/scenario-welcoming.mp3"
         },
@@ -149,7 +149,7 @@
         "state": "gentle",
         "audio": {
           "paused": false,
-          "currentTime": 2.003744,
+          "currentTime": 1.383916,
           "duration": 4.56,
           "src": "http://127.0.0.1:4173/forge/assets/scenario-gentle.mp3"
         },
@@ -159,7 +159,7 @@
         "state": "thinking",
         "audio": {
           "paused": false,
-          "currentTime": 2.084506,
+          "currentTime": 1.799761,
           "duration": 4.56,
           "src": "http://127.0.0.1:4173/forge/assets/scenario-thinking.mp3"
         },
@@ -169,7 +169,7 @@
         "state": "playful",
         "audio": {
           "paused": false,
-          "currentTime": 2.070896,
+          "currentTime": 1.750108,
           "duration": 4.488,
           "src": "http://127.0.0.1:4173/forge/assets/scenario-playful.mp3"
         },
@@ -188,35 +188,35 @@
       {
         "a": "welcoming",
         "b": "gentle",
-        "rms": 14.950614771706507,
-        "mean_abs": 2.3974384728703733,
+        "rms": 14.688580646799034,
+        "mean_abs": 2.2950997208229027,
         "bbox": [
           44,
-          195,
-          1028,
+          196,
+          1027,
           1006
         ]
       },
       {
         "a": "welcoming",
         "b": "thinking",
-        "rms": 16.413366190153717,
-        "mean_abs": 2.871046278840574,
+        "rms": 15.846645247997742,
+        "mean_abs": 2.65395882910447,
         "bbox": [
           44,
-          191,
-          1031,
+          189,
+          1030,
           1006
         ]
       },
       {
         "a": "welcoming",
         "b": "playful",
-        "rms": 14.116723066744626,
-        "mean_abs": 2.271995068901457,
+        "rms": 13.961212585456954,
+        "mean_abs": 2.1514705301617716,
         "bbox": [
           44,
-          195,
+          196,
           1039,
           1006
         ]
@@ -224,20 +224,20 @@
       {
         "a": "gentle",
         "b": "thinking",
-        "rms": 13.33377087637516,
-        "mean_abs": 1.7219191794322368,
+        "rms": 12.952191990502628,
+        "mean_abs": 1.6971930768887378,
         "bbox": [
           44,
-          191,
-          1031,
+          189,
+          1030,
           1006
         ]
       },
       {
         "a": "gentle",
         "b": "playful",
-        "rms": 13.795801811313337,
-        "mean_abs": 2.161378870448778,
+        "rms": 13.59250442470892,
+        "mean_abs": 2.006550832208727,
         "bbox": [
           44,
           197,
@@ -248,11 +248,11 @@
       {
         "a": "thinking",
         "b": "playful",
-        "rms": 14.694190322163726,
-        "mean_abs": 2.3323198998671075,
+        "rms": 14.4528391975851,
+        "mean_abs": 2.2716405174219556,
         "bbox": [
           44,
-          191,
+          189,
           1039,
           1006
         ]
