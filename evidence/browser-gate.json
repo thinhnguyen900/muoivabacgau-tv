@@ -21,28 +21,28 @@
     {
       "state": "welcoming",
       "paused": false,
-      "currentTime": 0.750219,
+      "currentTime": 0.117976,
       "duration": 5.064,
       "src": "http://127.0.0.1:4173/forge/assets/scenario-welcoming.mp3"
     },
     {
       "state": "gentle",
       "paused": false,
-      "currentTime": 0.74858,
+      "currentTime": 1.765958,
       "duration": 4.56,
       "src": "http://127.0.0.1:4173/forge/assets/scenario-gentle.mp3"
     },
     {
       "state": "thinking",
       "paused": false,
-      "currentTime": 0.751054,
+      "currentTime": 2.031157,
       "duration": 4.56,
       "src": "http://127.0.0.1:4173/forge/assets/scenario-thinking.mp3"
     },
     {
       "state": "playful",
       "paused": false,
-      "currentTime": 1.006439,
+      "currentTime": 2.002949,
       "duration": 4.488,
       "src": "http://127.0.0.1:4173/forge/assets/scenario-playful.mp3"
     }
@@ -55,7 +55,7 @@
     "brows": true,
     "jaw": true,
     "audioDrivenMouth": true,
-    "visualVersion": "v8-open-warm-eyes",
+    "visualVersion": "v9-soft-face-sheen",
     "scleraIrisPupil": true,
     "softArmRig": true,
     "cinematicToneMap": true,
@@ -71,7 +71,11 @@
     "handPalms": true,
     "balancedProportions": true,
     "openEyeDesign": true,
-    "singleSmileArc": true
+    "singleSmileArc": true,
+    "softFaceBridge": true,
+    "doubleCatchlight": true,
+    "physicalFurSheen": true,
+    "philtrumDetail": true
   },
   "render": "procedural-webgl-threejs",
   "pageErrors": []

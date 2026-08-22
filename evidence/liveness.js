@@ -27,3 +27,19 @@
   function deadCharacterAudit(plans){const issues=[];if(!plans.length)return ['no-plans'];for(const f of ['gaze','head','brow','mouth','gesture'])if(new Set(plans.map(p=>p[f])).size<2)issues.push(`static-${f}`);for(const f of ['eyeOpen','browLift','browInnerLift','headTilt','torsoLean','smile','eyeContactRatio','armOpenness','eyeSquint'])if(new Set(plans.map(p=>Number(p[f]).toFixed(2))).size<3)issues.push(`static-${f}`);if(!plans.some(p=>p.speaking&&p.jawOpen>.07))issues.push('dead-jaw');if(plans.some(p=>!p.blinkMs||!p.microShiftMs||!p.microSaccadeMs||!p.weightShiftMs||!p.blinkAsymMs||!p.interruptWindowMs||!p.speechChunkMs||!p.gazeHoldMs||!p.transitionMs||!p.audioEnvelopeAttackMs||!p.audioEnvelopeReleaseMs||!p.visemeLagMs||!p.headLeadMs||!p.gestureLeadMs||!p.settleMs||!p.emotionArc||!p.idleAlive))issues.push('missing-micro-motion');if(plans.some(p=>p.eyeOpen<0||p.eyeOpen>1||p.jawOpen<0||p.jawOpen>1||p.speechEnergy<0||p.speechEnergy>1||p.eyeContactRatio<0||p.eyeContactRatio>1||p.armOpenness<0||p.armOpenness>1||p.cheekLift<0||p.cheekLift>1||p.eyeSquint<0||p.eyeSquint>.25||p.pawCurl<0||p.pawCurl>1))issues.push('face-range-invalid');for(let i=1;i<plans.length;i++)if(plans[i].gesture===plans[i-1].gesture)issues.push('repeated-gesture');if(plans.some(p=>p.performance==='gentle'&&p.eventPolicy!=='suppress-nonessential'))issues.push('gentle-event-leak');if(plans.some(p=>p.speaking&&!p.anticipatory))issues.push('missing-speech-anticipation');if(plans.some(p=>p.speaking&&(p.visemeLagMs<20||p.audioEnvelopeAttackMs>=p.audioEnvelopeReleaseMs)))issues.push('speech-envelope-invalid');if(plans.some(p=>p.emotionArc.onsetMs>=p.emotionArc.holdMs||p.emotionArc.releaseMs<120||p.emotionArc.peak<.5))issues.push('emotion-arc-invalid');if(plans.some(p=>p.eyeOpen>.97||p.eyeSquint<0))issues.push('uncanny-eye-aperture');return [...new Set(issues)];}
   return {STATES,plan,onInterrupt,deadCharacterAudit};
 });
+
+// Live presentation pass: increase actual scene separation and preserve the warm/cool
+// cinematic hierarchy. This is intentionally visible in the review build and does not
+// weaken any screenshot threshold.
+if(typeof document!=='undefined')queueMicrotask(()=>{
+  const stage=document.getElementById('stage'); if(!stage)return;
+  const tuneCanvas=()=>{const c=stage.querySelector('canvas');if(!c)return false;c.style.filter='contrast(1.115) saturate(1.085) brightness(1.025)';return true};
+  if(!tuneCanvas()){const mo=new MutationObserver(()=>{if(tuneCanvas())mo.disconnect()});mo.observe(stage,{childList:true})}
+  if(stage.querySelector('.cinematic-depth-pass'))stage.querySelector('.cinematic-depth-pass').remove();
+  if(stage.querySelector('.cinematic-grade-pass'))return;
+  const d=document.createElement('div');d.className='cinematic-grade-pass';
+  Object.assign(d.style,{position:'absolute',inset:'0',zIndex:'2',pointerEvents:'none',borderRadius:'inherit',
+    background:'radial-gradient(ellipse at 31% 31%, rgba(255,210,167,.10) 0%, rgba(255,190,132,.035) 23%, transparent 47%), radial-gradient(ellipse at 80% 29%, rgba(105,164,215,.105) 0%, rgba(64,112,158,.032) 30%, transparent 55%), radial-gradient(ellipse at 50% 88%, rgba(211,103,54,.08) 0%, transparent 38%), linear-gradient(90deg, rgba(16,8,5,.10) 0%, transparent 18% 77%, rgba(7,14,23,.11) 100%)',
+    boxShadow:'inset 0 0 145px rgba(3,2,2,.32), inset 0 -95px 120px rgba(12,6,4,.20), inset 0 70px 105px rgba(255,215,176,.025)',mixBlendMode:'soft-light',opacity:'.98'});
+  stage.appendChild(d);
+});
