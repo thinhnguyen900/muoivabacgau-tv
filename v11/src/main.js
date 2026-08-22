@@ -21,18 +21,18 @@ function makeBackdropTexture(){
 }
 
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x83a49d);scene.fog=new THREE.FogExp2(0x91aa9c,0.026);
-const camera=new THREE.PerspectiveCamera(31,1,.1,100);camera.position.set(0,2.88,9.38);camera.lookAt(0,2.28,.04);
-const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.94;stage.prepend(renderer.domElement);
+const camera=new THREE.PerspectiveCamera(31,1,.1,100);camera.position.set(0,2.86,9.30);camera.lookAt(0,2.26,.04);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.97;stage.prepend(renderer.domElement);
 
 const backdrop=new THREE.Mesh(new THREE.PlaneGeometry(14,9),new THREE.MeshBasicMaterial({map:makeBackdropTexture(),fog:false,toneMapped:false}));backdrop.position.set(0,3.25,-3.35);scene.add(backdrop);
-const hemi=new THREE.HemisphereLight(0xffead3,0x29483b,1.05);scene.add(hemi);
-const key=new THREE.DirectionalLight(0xffd6ae,2.35);key.position.set(-4.6,7.3,6.0);key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.camera.near=.1;key.shadow.camera.far=24;key.shadow.camera.left=-5;key.shadow.camera.right=5;key.shadow.camera.top=7;key.shadow.camera.bottom=-2;key.shadow.bias=-0.00018;key.shadow.normalBias=0.03;scene.add(key);
-const fill=new THREE.DirectionalLight(0xfff0df,.72);fill.position.set(4.3,3.5,6.1);scene.add(fill);
-const rim=new THREE.DirectionalLight(0xb8d8ca,.53);rim.position.set(5.2,5.6,-4.5);scene.add(rim);
-const faceBounce=new THREE.PointLight(0xffe7cc,.50,9,2);faceBounce.position.set(-.2,3.52,4.5);scene.add(faceBounce);
-const eyeBounce=new THREE.PointLight(0xfff5e5,.16,5,2);eyeBounce.position.set(.2,3.24,4.9);scene.add(eyeBounce);
+const hemi=new THREE.HemisphereLight(0xffead3,0x29483b,1.08);scene.add(hemi);
+const key=new THREE.DirectionalLight(0xffd9b6,2.10);key.position.set(-4.9,7.6,6.4);key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.camera.near=.1;key.shadow.camera.far=24;key.shadow.camera.left=-5;key.shadow.camera.right=5;key.shadow.camera.top=7;key.shadow.camera.bottom=-2;key.shadow.bias=-0.00016;key.shadow.normalBias=0.035;key.shadow.radius=3;scene.add(key);
+const fill=new THREE.DirectionalLight(0xfff1e2,.84);fill.position.set(4.6,3.8,6.6);scene.add(fill);
+const rim=new THREE.DirectionalLight(0xb9d9ce,.46);rim.position.set(5.4,5.9,-4.8);scene.add(rim);
+const faceBounce=new THREE.PointLight(0xffead2,.60,9,2);faceBounce.position.set(-.15,3.44,4.75);scene.add(faceBounce);
+const eyeBounce=new THREE.PointLight(0xfff7e9,.20,5,2);eyeBounce.position.set(.16,3.22,5.05);scene.add(eyeBounce);
 const floor=new THREE.Mesh(new THREE.CircleGeometry(6.8,96),new THREE.MeshStandardMaterial({color:0x6b5944,roughness:.98,metalness:0}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
-const contact=new THREE.Mesh(new THREE.CircleGeometry(2.05,64),new THREE.MeshBasicMaterial({color:0x263126,transparent:true,opacity:.12,depthWrite:false}));contact.rotation.x=-Math.PI/2;contact.position.y=.006;contact.scale.set(1,.56,1);scene.add(contact);
+const contact=new THREE.Mesh(new THREE.CircleGeometry(2.05,64),new THREE.MeshBasicMaterial({color:0x263126,transparent:true,opacity:.10,depthWrite:false}));contact.rotation.x=-Math.PI/2;contact.position.y=.006;contact.scale.set(1,.56,1);scene.add(contact);
 
 const MODEL_URL='/character/bac-gau.glb';
 let character=new CharacterRuntime({scene,onStatus:t=>status.textContent=t});let modelMode='glb';let report;
@@ -47,7 +47,7 @@ catch(err){
 poster.hidden=true;
 const motion=new MotionController(character,t=>caption.textContent=t);motion.setState('idle');
 const voice=document.querySelector('#voice');const lip=new LipSync(character);lip.attach(voice);
-debug.textContent=JSON.stringify(report,null,2);window.__BACGAU_V11__={ready:true,model:modelMode==='glb',mode:modelMode,report,visualPipeline:'authored-warm-v5-mature-portrait'};
+debug.textContent=JSON.stringify(report,null,2);window.__BACGAU_V11__={ready:true,model:modelMode==='glb',mode:modelMode,report,visualPipeline:'authored-warm-v6-soft-portrait'};
 loading.hidden=true;document.querySelector('.app').dataset.appReady='true';
 
 document.querySelectorAll('[data-state]').forEach(btn=>btn.onclick=()=>motion.setState(btn.dataset.state));
