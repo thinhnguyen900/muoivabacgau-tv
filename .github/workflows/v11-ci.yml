@@ -1,0 +1,25 @@
+name: Bác Gấu V11 Rigged Runtime
+on:
+  push:
+    branches: [v11-rigged-character]
+    paths: ['v11/**','.github/workflows/v11-ci.yml']
+  workflow_dispatch:
+jobs:
+  same-artifact-browser-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: v11
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install
+      - run: npx playwright install --with-deps chromium webkit
+      - run: npm run build
+      - name: Serve exact built artifact
+        run: npm run preview > /tmp/v11-preview.log 2>&1 &
+      - name: Chromium + WebKit smoke gate
+        run: npm run test:smoke
