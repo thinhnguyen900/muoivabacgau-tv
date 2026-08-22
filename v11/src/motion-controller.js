@@ -1,11 +1,11 @@
 import * as THREE from 'three';
 
 const STATES = {
-  idle: { clips: ['idle', 'standingrelax', 'wait'], caption: 'Bác Gấu đang ở đây với Muối.', smile: 0.12, timeScale: 0.86, gaze: [0, 0], head: [0.015, 0, 0] },
-  welcoming: { clips: ['wave', 'wavegoodbye', 'hello'], caption: 'Muối về rồi à? Bác chào con. 👋', smile: 0.34, timeScale: 0.80, gaze: [0, 0.03], head: [-0.02, -0.03, 0.015], once: true },
-  gentle: { clips: ['listen', 'agree', 'idle'], caption: 'Ừ, bác nghe đây. Con kể từ từ cũng được.', smile: 0.10, timeScale: 0.82, gaze: [-0.04, -0.10], head: [0.06, 0.03, -0.025] },
-  thinking: { clips: ['think', 'scratch', 'idle'], caption: 'Hừm… câu này hay đó. Bác nghĩ một chút nha.', smile: 0.05, timeScale: 0.76, gaze: [0.16, 0.10], head: [-0.035, -0.09, 0.04] },
-  playful: { clips: ['happy', 'victory', 'idle'], caption: 'Ồ, hay đó. Mình khám phá thử nhé.', smile: 0.30, timeScale: 0.90, gaze: [0.07, 0.05], head: [-0.025, 0.06, -0.035] },
+  idle: { clips: ['idle', 'standingrelax', 'wait'], caption: 'Bác Gấu đang ở đây với Muối.', smile: 0.12, timeScale: 0.86, gaze: [0, 0], head: [0.015, 0, 0], arms: [[0.012,0,-0.025],[0.009,0,0.025]] },
+  welcoming: { clips: ['wave', 'wavegoodbye', 'hello'], caption: 'Muối về rồi à? Bác chào con. 👋', smile: 0.34, timeScale: 0.80, gaze: [0, 0.03], head: [-0.02, -0.03, 0.015], arms: [[-0.03,0,-0.06],[-0.22,-0.05,0.74]], once: true },
+  gentle: { clips: ['listen', 'agree', 'idle'], caption: 'Ừ, bác nghe đây. Con kể từ từ cũng được.', smile: 0.10, timeScale: 0.82, gaze: [-0.04, -0.10], head: [0.06, 0.03, -0.025], arms: [[0.055,0,0.11],[0.045,0,-0.11]] },
+  thinking: { clips: ['think', 'scratch', 'idle'], caption: 'Hừm… câu này hay đó. Bác nghĩ một chút nha.', smile: 0.05, timeScale: 0.76, gaze: [0.16, 0.10], head: [-0.035, -0.09, 0.04], arms: [[0.01,0,-0.02],[-0.16,-0.05,-0.48]] },
+  playful: { clips: ['happy', 'victory', 'idle'], caption: 'Ồ, hay đó. Mình khám phá thử nhé.', smile: 0.30, timeScale: 0.90, gaze: [0.07, 0.05], head: [-0.025, 0.06, -0.035], arms: [[-0.07,0,-0.24],[-0.06,0,0.27]] },
 };
 
 const damp = (a, b, lambda, dt) => THREE.MathUtils.damp(a, b, lambda, dt);
@@ -16,6 +16,7 @@ export class MotionController {
     this.onCaption = onCaption;
     this.state = 'idle';
     this.elapsed = 0;
+    this.stateElapsed = 0;
     this.smile = 0.12;
     this.blinkValueL = 0;
     this.blinkValueR = 0;
@@ -26,12 +27,15 @@ export class MotionController {
     this.nextShift = 3.2 + Math.random() * 3.0;
     this.gaze = { x: 0, y: 0, tx: 0, ty: 0 };
     this.shift = { x: 0, y: 0, z: 0, tx: 0, ty: 0, tz: 0 };
+    this.armL = {x:0,y:0,z:0};
+    this.armR = {x:0,y:0,z:0};
   }
 
   setState(name) {
     const safeName = name in STATES ? name : 'idle';
     const state = STATES[safeName];
     this.state = safeName;
+    this.stateElapsed = 0;
     this.onCaption(state.caption);
     this.character.play(state.clips, {
       fade: 0.48,
@@ -52,6 +56,7 @@ export class MotionController {
 
   update(dt) {
     this.elapsed += dt;
+    this.stateElapsed += dt;
     this.nextBlink -= dt;
     this.nextGaze -= dt;
     this.nextShift -= dt;
@@ -62,8 +67,8 @@ export class MotionController {
 
     this._updateBlink(dt);
 
-    const targetSmile = STATES[this.state]?.smile ?? STATES.idle.smile;
-    this.smile = damp(this.smile, targetSmile, 4.5, dt);
+    const state = STATES[this.state] ?? STATES.idle;
+    this.smile = damp(this.smile, state.smile, 4.5, dt);
     this.character.setMorph('smile', this.smile);
 
     this.gaze.x = damp(this.gaze.x, this.gaze.tx, 5.0, dt);
@@ -75,13 +80,27 @@ export class MotionController {
     this.shift.z = damp(this.shift.z, this.shift.tz, 2.4, dt);
     const breath = Math.sin(this.elapsed * 1.35) * 0.009;
     const microYaw = Math.sin(this.elapsed * 0.43 + 1.2) * 0.006;
-    this.character.setHeadPose(this.shift.x + breath * 0.35, this.shift.y + microYaw, this.shift.z);
+    const settle = Math.exp(-this.stateElapsed*2.8)*0.012;
+    this.character.setHeadPose(this.shift.x + breath * 0.35 - settle, this.shift.y + microYaw, this.shift.z);
     this.character.setNeckPose(breath * 0.42, -microYaw * 0.55, -this.shift.z * 0.28);
 
     const shoulderBreath = Math.sin(this.elapsed * 1.35 - 0.35) * 0.006;
     this.character.setShoulders(
       { x: shoulderBreath, z: -0.012 + this.shift.z * 0.12 },
       { x: shoulderBreath * 0.92, z: 0.012 + this.shift.z * 0.10 },
+    );
+
+    const [targetL,targetR]=state.arms;
+    for(const axis of ['x','y','z']){
+      const idx=axis==='x'?0:axis==='y'?1:2;
+      this.armL[axis]=damp(this.armL[axis],targetL[idx],3.0,dt);
+      this.armR[axis]=damp(this.armR[axis],targetR[idx],3.0,dt);
+    }
+    const handLife=Math.sin(this.elapsed*.71+0.6)*.008;
+    const wave=this.state==='welcoming'?Math.sin(this.elapsed*3.1)*.055:0;
+    this.character.setArms(
+      {x:this.armL.x+handLife*.35,y:this.armL.y,z:this.armL.z-wave*.22},
+      {x:this.armR.x-handLife*.25,y:this.armR.y,z:this.armR.z+wave},
     );
   }
 
