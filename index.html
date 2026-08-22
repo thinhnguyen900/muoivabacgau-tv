@@ -1,60 +1,17 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bác Gấu Phase 2 — Living Room v0</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#100e0b" />
+  <title>Bác Gấu V11 · Safari Gate</title>
+  <style>
+    html,body{margin:0;min-height:100%;background:#100e0b;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{display:grid;place-items:center;min-height:100dvh;padding:24px;box-sizing:border-box}
+    main{max-width:560px;text-align:center}.spinner{width:40px;height:40px;margin:0 auto 18px;border:4px solid #ffffff2a;border-top-color:#e0b568;border-radius:50%;animation:s .8s linear infinite}@keyframes s{to{transform:rotate(360deg)}}
+    h1{font-size:24px;margin:0 0 10px}p{opacity:.72;line-height:1.5}a{display:inline-block;margin-top:14px;padding:12px 18px;background:#e0b568;color:#21160d;text-decoration:none;border-radius:14px;font-weight:800}
+  </style>
+  <script>setTimeout(()=>location.replace('/forge/review-gate.html'),80)</script>
 </head>
-<body>
-  <main class="app-shell">
-    <section class="scene" id="scene">
-      <div class="sky-glow"></div>
-      <div class="window"><div class="moon"></div><div class="cloud c1"></div><div class="cloud c2"></div></div>
-      <div class="shelf"><div class="book b1"></div><div class="book b2"></div><div class="book b3"></div><div class="plant"><span></span><span></span><span></span></div></div>
-      <div class="lamp"><div class="shade"></div><div class="stand"></div></div>
-      <div class="rug"></div>
-      <div class="table"><div class="mug"></div><div class="book-open"></div></div>
-      <div class="door" id="door"><div class="knob"></div></div>
-
-      <div class="bear-wrap" id="bearWrap" data-state="idle">
-        <div class="bear-shadow"></div>
-        <div class="bear" id="bear">
-          <div class="ear left"></div><div class="ear right"></div>
-          <div class="head">
-            <div class="brow left"></div><div class="brow right"></div>
-            <div class="eye left"><span></span></div><div class="eye right"><span></span></div>
-            <div class="snout"><div class="nose"></div><div class="mouth"></div></div>
-          </div>
-          <div class="body"><div class="arm left"></div><div class="arm right"></div><div class="belly"></div></div>
-        </div>
-        <div class="thought-dots"><i></i><i></i><i></i></div>
-      </div>
-
-      <div class="rabbit" id="rabbit"><div class="r-ear l"></div><div class="r-ear r"></div><div class="r-head"><div class="r-eye l"></div><div class="r-eye r"></div><div class="r-nose"></div></div><div class="r-body"></div></div>
-      <div class="subtitle" id="subtitle">Bác đang xếp lại mấy quyển sách...</div>
-      <div class="status-pill" id="statusPill">IDLE · đang sống</div>
-      <div class="controls">
-        <button id="arriveBtn">Muối vừa về</button>
-        <button id="talkBtn">Muối nói</button>
-        <button id="knockBtn">Có tiếng gõ cửa</button>
-        <button id="resetBtn" class="ghost">Reset scene</button>
-      </div>
-    </section>
-
-    <aside class="dashboard">
-      <div class="dash-head"><div><p class="eyebrow">PARENT / DEV VIEW</p><h1>Bác Gấu Living Engine</h1></div><span class="version">v0.1</span></div>
-      <div class="metric-grid">
-        <div class="metric"><span>State</span><strong id="mState">idle</strong></div>
-        <div class="metric"><span>Time context</span><strong id="mTime">—</strong></div>
-        <div class="metric"><span>Engagement</span><strong id="mEngagement">0</strong></div>
-        <div class="metric"><span>Story continuity</span><strong id="mStory">xếp sách</strong></div>
-      </div>
-      <div class="panel"><div class="panel-title">Live event log</div><div id="eventLog" class="event-log"></div></div>
-      <div class="panel compact"><div class="panel-title">What Bác Gấu currently knows</div><ul id="memoryList"><li>Muối chưa vào phòng.</li><li>Bác đang dọn sách trước khi Muối về.</li><li>Thỏ xám đang ở gần nhà nhưng chưa xuất hiện.</li></ul></div>
-      <div class="panel compact"><div class="panel-title">Child-ready gate</div><div class="gate-row"><span>Animation fallback</span><b class="ok">PASS</b></div><div class="gate-row"><span>No dead-air > 3s</span><b class="ok">PASS</b></div><div class="gate-row"><span>Unexpected event can be interrupted</span><b class="warn">SIM</b></div><div class="gate-row"><span>Voice pipeline</span><b class="pending">NEXT</b></div></div>
-    </aside>
-  </main>
-  <script src="app.js"></script>
-</body>
+<body><main><div class="spinner"></div><h1>Bác Gấu V11 · Safari Gate</h1><p>Đang mở bản WebGL same-origin dành cho iPhone Safari…</p><a href="/forge/review-gate.html">Mở ngay</a></main></body>
 </html>
