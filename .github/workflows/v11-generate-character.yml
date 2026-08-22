@@ -35,3 +35,4 @@ jobs:
           git add v11/public/character/bac-gau.glb v11/public/character/generation-manifest.json
           git commit -m 'chore(v11): generate mature mentor Bác Gấu GLB [skip ci]' || exit 0
           git push origin HEAD:v11-rigged-character
+# automation retrigger: mature mentor generation
