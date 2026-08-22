@@ -11,18 +11,20 @@ const furDark=mat(0x453027,.97,{sheen:.18,sheenColor:0x6b4d3d});
 const muzzleMat=mat(0xb88f70,.94,{sheen:.22,sheenColor:0xd3ad8c});
 const muzzleShade=mat(0x9d765c,.96,{sheen:.14});
 const noseMat=mat(0x2a201d,.48,{clearcoat:.055,clearcoatRoughness:.72});
-const eyeWhite=mat(0xf0e8de,.66,{clearcoat:.025,clearcoatRoughness:.72});
+const eyeWhite=mat(0xeee7de,.72,{clearcoat:.018,clearcoatRoughness:.78});
 const irisMat=mat(0x76502e,.42,{clearcoat:.06,clearcoatRoughness:.58});
 const pupilMat=mat(0x17110e,.30,{clearcoat:.075,clearcoatRoughness:.52});
-const mouthMat=mat(0x452723,.73,{clearcoat:.018});
+const mouthMat=mat(0x452723,.78,{clearcoat:.012});
 const innerEar=mat(0x96695d,.95,{sheen:.15});
 
 function lathe(points,segments=72){return new THREE.LatheGeometry(points.map(([r,y])=>new THREE.Vector2(r,y)),segments);}
 function mesh(g,m=fur){const x=new THREE.Mesh(g,m);x.castShadow=true;x.receiveShadow=true;return x;}
 function groupAt(parent,name,pos=[0,0,0]){const g=new THREE.Group();g.name=name;g.position.set(...pos);parent.add(g);return g;}
 function oval(radius=1,sy=1,sz=1,m=fur,seg=48){const x=mesh(new THREE.SphereGeometry(radius,seg,Math.max(24,seg/2)),m);x.scale.set(1,sy,sz);return x;}
-function browGeometry(){const c=new THREE.CatmullRomCurve3([new THREE.Vector3(-.30,0,0),new THREE.Vector3(0,.045,.016),new THREE.Vector3(.30,0,0)]);return new THREE.TubeGeometry(c,20,.038,8,false);}
-function wedgeNose(){const g=new THREE.SphereGeometry(.29,40,24);const p=g.attributes.position;for(let i=0;i<p.count;i++){const y=p.getY(i);const k=1-THREE.MathUtils.clamp((y+.29)/.58,0,1)*.20;p.setX(i,p.getX(i)*k);}p.needsUpdate=true;g.computeVertexNormals();return g;}
+function browGeometry(){const c=new THREE.CatmullRomCurve3([new THREE.Vector3(-.30,0,0),new THREE.Vector3(-.11,.035,.014),new THREE.Vector3(.10,.044,.017),new THREE.Vector3(.30,.005,0)]);return new THREE.TubeGeometry(c,24,.034,8,false);}
+function lidRimGeometry(upper=true){const y=upper?.042:-.020;const c=new THREE.CatmullRomCurve3([new THREE.Vector3(-.19,0,0),new THREE.Vector3(-.09,y,0),new THREE.Vector3(.09,y,0),new THREE.Vector3(.19,0,0)]);return new THREE.TubeGeometry(c,20,.014,7,false);}
+function philtrumGeometry(){const c=new THREE.CatmullRomCurve3([new THREE.Vector3(0,.08,0),new THREE.Vector3(-.006,.02,.006),new THREE.Vector3(0,-.075,0)]);return new THREE.TubeGeometry(c,14,.013,7,false);}
+function wedgeNose(){const g=new THREE.SphereGeometry(.285,40,24);const p=g.attributes.position;for(let i=0;i<p.count;i++){const y=p.getY(i);const k=1-THREE.MathUtils.clamp((y+.285)/.57,0,1)*.22;p.setX(i,p.getX(i)*k);}p.needsUpdate=true;g.computeVertexNormals();return g;}
 function capsuleBetween(parent,a,b,r,m){const mid=a.clone().add(b).multiplyScalar(.5),len=a.distanceTo(b);const c=mesh(new THREE.CapsuleGeometry(r,Math.max(.01,len-r*2),10,24),m);c.position.copy(mid);c.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),b.clone().sub(a).normalize());parent.add(c);return c;}
 
 export class ProceduralBearRuntime{
@@ -51,26 +53,32 @@ export class ProceduralBearRuntime{
     }
 
     for(const s of [-1,1]){
-      const socket=oval(.275,.72,.18,furDark,44);socket.position.set(s*.40,.26,.72);socket.scale.x=1.02;headCtl.add(socket);
-      const eyeCtl=groupAt(headCtl,s<0?'eyeLeft':'eyeRight',[s*.40,.255,.805]);this._bind(s<0?'eyeLeft':'eyeRight',eyeCtl);
-      const sclera=oval(.218,.70,.29,eyeWhite,44);sclera.scale.x=.90;eyeCtl.add(sclera);
-      const iris=oval(.132,.78,.102,irisMat,36);iris.position.z=.205;eyeCtl.add(iris);
-      const pupil=oval(.078,.82,.073,pupilMat,32);pupil.position.z=.277;eyeCtl.add(pupil);
-      const catchlight=oval(.018,1,1,mat(0xffffff,.18,{clearcoat:.02}),18);catchlight.position.set(-.023,.034,.333);eyeCtl.add(catchlight);
-      const lid=oval(.238,.70,.12,furMid,44);lid.position.set(0,.132,.168);lid.scale.set(.97,.15,1);lid.userData.baseY=.132;eyeCtl.add(lid);this.morph[s<0?'blinkLeft':'blinkRight']={lid};
-      const brow=mesh(browGeometry(),furDark);brow.position.set(s*.40,.575,.80);brow.rotation.z=s*.025;headCtl.add(brow);this.morph[s<0?'browL':'browR']={brow,baseY:brow.position.y,baseZ:brow.rotation.z};
+      const socket=oval(.267,.72,.17,furDark,44);socket.position.set(s*.395,.255,.716);socket.scale.x=.98;headCtl.add(socket);
+      const eyeCtl=groupAt(headCtl,s<0?'eyeLeft':'eyeRight',[s*.395,.252,.803]);this._bind(s<0?'eyeLeft':'eyeRight',eyeCtl);
+      const sclera=oval(.205,.68,.285,eyeWhite,44);sclera.scale.x=.86;eyeCtl.add(sclera);
+      const iris=oval(.143,.79,.101,irisMat,38);iris.position.z=.195;eyeCtl.add(iris);
+      const pupil=oval(.086,.84,.073,pupilMat,34);pupil.position.z=.269;eyeCtl.add(pupil);
+      const catchlight=oval(.017,1,1,mat(0xffffff,.20,{clearcoat:.018}),18);catchlight.position.set(-.026,.037,.325);eyeCtl.add(catchlight);
+
+      const upperRim=mesh(lidRimGeometry(true),furDark);upperRim.position.set(0,.045,.245);upperRim.rotation.z=s*.012;eyeCtl.add(upperRim);
+      const lowerRim=mesh(lidRimGeometry(false),furMid);lowerRim.position.set(0,-.103,.238);lowerRim.rotation.z=-s*.008;eyeCtl.add(lowerRim);
+      const lowerLid=oval(.218,.64,.105,furMid,42);lowerLid.position.set(0,-.160,.154);lowerLid.scale.set(.94,.10,1);eyeCtl.add(lowerLid);
+      const lid=oval(.226,.67,.112,furMid,44);lid.position.set(0,.129,.164);lid.scale.set(.95,.135,1);lid.userData.baseY=.129;eyeCtl.add(lid);this.morph[s<0?'blinkLeft':'blinkRight']={lid};
+
+      const brow=mesh(browGeometry(),furDark);brow.position.set(s*.395,.558,.795);brow.rotation.z=s*.018;headCtl.add(brow);this.morph[s<0?'browL':'browR']={brow,baseY:brow.position.y,baseZ:brow.rotation.z};
     }
 
-    const muzzle=groupAt(headCtl,'muzzle',[0,-.34,.72]);this.controls.set('muzzle',muzzle);
-    const muzzleBase=oval(.53,.63,.22,muzzleShade,52);muzzleBase.position.set(0,-.03,-.03);muzzleBase.scale.x=1.10;muzzle.add(muzzleBase);
-    for(const s of [-1,1]){const cheek=oval(.405,.65,.28,muzzleMat,48);cheek.position.set(s*.245,.015,.10);cheek.rotation.y=s*.08;muzzle.add(cheek);}
-    const bridge=oval(.31,.46,.24,muzzleMat,44);bridge.position.set(0,.175,.10);muzzle.add(bridge);
-    const nose=mesh(wedgeNose(),noseMat);nose.position.set(0,.17,.325);nose.scale.set(.96,.68,.43);nose.rotation.x=-.055;muzzle.add(nose);
+    const muzzle=groupAt(headCtl,'muzzle',[0,-.33,.685]);this.controls.set('muzzle',muzzle);
+    const muzzleBase=oval(.505,.61,.20,muzzleShade,52);muzzleBase.position.set(0,-.035,-.025);muzzleBase.scale.x=1.08;muzzle.add(muzzleBase);
+    for(const s of [-1,1]){const cheek=oval(.392,.64,.255,muzzleMat,48);cheek.position.set(s*.235,.014,.078);cheek.rotation.y=s*.07;muzzle.add(cheek);}
+    const bridge=oval(.295,.45,.215,muzzleMat,44);bridge.position.set(0,.165,.070);muzzle.add(bridge);
+    const nose=mesh(wedgeNose(),noseMat);nose.position.set(0,.166,.286);nose.scale.set(.94,.66,.40);nose.rotation.x=-.048;muzzle.add(nose);
+    const philtrum=mesh(philtrumGeometry(),muzzleShade);philtrum.position.set(0,-.018,.272);muzzle.add(philtrum);
 
-    const jaw=groupAt(muzzle,'jaw',[0,-.27,.08]);this._bind('jaw',jaw);
-    const chin=oval(.405,.40,.22,muzzleMat,46);chin.position.set(0,-.13,-.015);jaw.add(chin);
-    const mouth=oval(.225,.082,.062,mouthMat,40);mouth.position.set(0,.018,.268);jaw.add(mouth);
-    const lowerLip=oval(.19,.046,.045,muzzleShade,36);lowerLip.position.set(0,-.038,.288);jaw.add(lowerLip);
+    const jaw=groupAt(muzzle,'jaw',[0,-.255,.055]);this._bind('jaw',jaw);
+    const chin=oval(.405,.38,.205,muzzleMat,46);chin.position.set(0,-.125,-.010);chin.scale.x=1.04;jaw.add(chin);
+    const mouth=oval(.202,.060,.050,mouthMat,40);mouth.position.set(0,.018,.242);jaw.add(mouth);
+    const lowerLip=oval(.176,.034,.040,muzzleShade,36);lowerLip.position.set(0,-.032,.258);jaw.add(lowerLip);
 
     for(const s of [-1,1]){
       const sh=groupAt(root,s<0?'shoulderLeft':'shoulderRight',[s*.95,2.13,.02]);this._bind(s<0?'shoulderLeft':'shoulderRight',sh);
@@ -85,15 +93,15 @@ export class ProceduralBearRuntime{
     for(const s of [-1,1]){const foot=oval(.52,.34,.84,furDark,44);foot.position.set(s*.55,.17,.30);foot.rotation.x=.05;root.add(foot);}
 
     root.position.y=.02;this.scene.add(root);this.ready=true;
-    this.onStatus('V11 authored fallback v3 ✓ · mature face + bent arm anatomy');
+    this.onStatus('V11 authored fallback v4 ✓ · almond eyes + integrated muzzle');
     return this.inspect();
   }
   _bind(role,obj){this.controls.set(role,obj);this.bind.set(role,{rot:obj.rotation.clone(),pos:obj.position.clone()});}
-  inspect(){return{fallback:true,controls:[...this.controls.keys()],facial:['jawOpen','smile','blinkLeft','blinkRight','browInnerUp'],visual:'authored-lathe-v3-mature-warm'};}
+  inspect(){return{fallback:true,controls:[...this.controls.keys()],facial:['jawOpen','smile','blinkLeft','blinkRight','browInnerUp'],visual:'authored-lathe-v4-almond-eyes-integrated-muzzle'};}
   play(){return true;}
-  setMorph(role,value){const v=clamp01(value);if(role==='jawOpen'){const j=this.controls.get('jaw');if(j){const b=this.bind.get('jaw');j.rotation.x=b.rot.x+.018+v*.16;j.position.y=b.pos.y-v*.065;}return true;}if(role==='smile'){const j=this.controls.get('jaw');if(j)j.rotation.z=(v-.1)*.008;return true;}if(role==='blinkLeft'||role==='blinkRight'){const e=this.morph[role];if(e){e.lid.scale.y=.15+v*3.15;e.lid.position.y=e.lid.userData.baseY-v*.123;}return true;}if(role==='browInnerUp'){for(const k of ['browL','browR']){const e=this.morph[k];if(e){e.brow.position.y=e.baseY+v*.085;e.brow.rotation.z=e.baseZ+(k==='browL'?1:-1)*v*.04;}}return true;}return false;}
+  setMorph(role,value){const v=clamp01(value);if(role==='jawOpen'){const j=this.controls.get('jaw');if(j){const b=this.bind.get('jaw');j.rotation.x=b.rot.x+.014+v*.145;j.position.y=b.pos.y-v*.055;}return true;}if(role==='smile'){const j=this.controls.get('jaw');if(j)j.rotation.z=(v-.1)*.006;return true;}if(role==='blinkLeft'||role==='blinkRight'){const e=this.morph[role];if(e){e.lid.scale.y=.135+v*3.25;e.lid.position.y=e.lid.userData.baseY-v*.119;}return true;}if(role==='browInnerUp'){for(const k of ['browL','browR']){const e=this.morph[k];if(e){e.brow.position.y=e.baseY+v*.078;e.brow.rotation.z=e.baseZ+(k==='browL'?1:-1)*v*.035;}}return true;}return false;}
   setBonePose(role,{x=0,y=0,z=0}={},strength=1){const o=this.controls.get(role),b=this.bind.get(role);if(!o||!b)return false;o.rotation.set(b.rot.x+x*strength,b.rot.y+y*strength,b.rot.z+z*strength);return true;}
-  setGaze(x=0,y=0){const yaw=THREE.MathUtils.clamp(x,-1,1)*.13,pitch=THREE.MathUtils.clamp(y,-1,1)*.085;for(const role of ['eyeLeft','eyeRight'])this.setBonePose(role,{x:pitch,y:yaw});return true;}
+  setGaze(x=0,y=0){const yaw=THREE.MathUtils.clamp(x,-1,1)*.115,pitch=THREE.MathUtils.clamp(y,-1,1)*.072;for(const role of ['eyeLeft','eyeRight'])this.setBonePose(role,{x:pitch,y:yaw});return true;}
   setHeadPose(x=0,y=0,z=0){return this.setBonePose('head',{x,y,z});}
   setNeckPose(x=0,y=0,z=0){return this.setBonePose('neck',{x,y,z});}
   setShoulders(left={},right={}){this.setBonePose('shoulderLeft',left);this.setBonePose('shoulderRight',right);}
