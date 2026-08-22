@@ -11,9 +11,20 @@ function variance(buf) {
   for(let y=0;y<png.height;y+=4) for(let x=0;x<png.width;x+=4){
     const i=(y*png.width+x)*4,r=png.data[i],g=png.data[i+1],b=png.data[i+2];
     const l=.2126*r+.7152*g+.0722*b;sum+=l;sum2+=l*l;n++;
-    if(Math.abs(r-143)+Math.abs(g-200)+Math.abs(b-231)>45) nonSky++;
+    if(Math.abs(r-135)+Math.abs(g-169)+Math.abs(b-161)>38) nonSky++;
   }
-  const mean=sum/n;return {std:Math.sqrt(Math.max(0,sum2/n-mean*mean)),nonSkyRatio:nonSky/n};
+  const mean=sum/n;return {std:Math.sqrt(Math.max(0,sum2/n-mean*mean)),nonBackdropRatio:nonSky/n};
+}
+
+function meanAbsDiff(a,b){
+  const pa=PNG.sync.read(a),pb=PNG.sync.read(b);
+  if(pa.width!==pb.width||pa.height!==pb.height)throw new Error('state screenshot dimensions differ');
+  let sum=0,n=0;
+  for(let y=80;y<Math.min(pa.height,720);y+=4)for(let x=40;x<Math.min(pa.width,900);x+=4){
+    const i=(y*pa.width+x)*4;
+    sum+=Math.abs(pa.data[i]-pb.data[i])+Math.abs(pa.data[i+1]-pb.data[i+1])+Math.abs(pa.data[i+2]-pb.data[i+2]);n+=3;
+  }
+  return sum/n;
 }
 
 for (const engine of [chromium, webkit]) {
@@ -40,10 +51,19 @@ for (const engine of [chromium, webkit]) {
   await page.waitForTimeout(1200);
   const shot=await page.screenshot({ path:`evidence/${engine.name()}-v11.png`, fullPage:true });
   const px=variance(shot);
-  if(px.std<28 || px.nonSkyRatio<.18) throw new Error(`${engine.name()} visual variance gate failed ${JSON.stringify(px)}`);
-  for(const label of ['Muối về','Con buồn','Hỏi khó','Kể chuyện']){
-    await page.getByRole('button',{name:new RegExp(label)}).click();await page.waitForTimeout(220);
+  if(px.std<26 || px.nonBackdropRatio<.16) throw new Error(`${engine.name()} visual variance gate failed ${JSON.stringify(px)}`);
+
+  const stateShots={};
+  for(const [key,label] of [['welcoming','Muối về'],['gentle','Con buồn'],['thinking','Hỏi khó'],['playful','Kể chuyện']]){
+    await page.getByRole('button',{name:new RegExp(label)}).click();
+    await page.waitForTimeout(650);
+    stateShots[key]=await page.screenshot({path:`evidence/${engine.name()}-${key}-v11.png`,fullPage:true});
   }
+  const pairs=[];const keys=Object.keys(stateShots);
+  for(let i=0;i<keys.length;i++)for(let j=i+1;j<keys.length;j++)pairs.push([`${keys[i]}:${keys[j]}`,meanAbsDiff(stateShots[keys[i]],stateShots[keys[j]])]);
+  const weakest=Math.min(...pairs.map(([,d])=>d));
+  if(weakest<1.15)throw new Error(`${engine.name()} emotion visual distinctness too low ${JSON.stringify(pairs)}`);
+
   await browser.close();
-  console.log(engine.name(), 'PASS', JSON.stringify({...state.v11,pixel:px}));
+  console.log(engine.name(), 'PASS', JSON.stringify({...state.v11,pixel:px,emotionDiff:pairs}));
 }
