@@ -1,0 +1,10 @@
+file:///home/runner/work/muoivabacgau-tv/muoivabacgau-tv/v11/scripts/generate-tripo.mjs:19
+    throw new Error(`${label}: HTTP ${res.status} ${JSON.stringify(body)}`);
+          ^
+
+Error: /generation/image-to-model: HTTP 403 {"code":2010,"status":"error","message":"You don't have enough credit to create this task","suggestion":"Please purchase more credit","request_id":"9b974088-ccd0-4436-b37a-b29cb36b82f5"}
+    at decode (file:///home/runner/work/muoivabacgau-tv/muoivabacgau-tv/v11/scripts/generate-tripo.mjs:19:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///home/runner/work/muoivabacgau-tv/muoivabacgau-tv/v11/scripts/generate-tripo.mjs:74:20
+
+Node.js v22.23.2
