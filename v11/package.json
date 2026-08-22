@@ -10,5 +10,5 @@
     "test:smoke": "node tests/smoke.mjs"
   },
   "dependencies": {"three": "^0.180.0"},
-  "devDependencies": {"@playwright/test": "^1.55.0", "vite": "^7.1.3"}
+  "devDependencies": {"@playwright/test": "^1.55.0", "vite": "^7.1.3", "pngjs": "^7.0.0"}
 }
