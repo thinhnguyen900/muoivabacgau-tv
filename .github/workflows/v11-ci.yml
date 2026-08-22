@@ -23,3 +23,11 @@ jobs:
         run: npm run preview > /tmp/v11-preview.log 2>&1 &
       - name: Chromium + WebKit smoke gate
         run: npm run test:smoke
+      - name: Preserve rendered visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v11-render-evidence-${{ github.sha }}
+          path: v11/evidence/*.png
+          if-no-files-found: warn
+          retention-days: 30
