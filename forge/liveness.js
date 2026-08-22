@@ -28,21 +28,16 @@
   return {STATES,plan,onInterrupt,deadCharacterAudit};
 });
 
-// V10 review grade: local contrast instead of global brightening. The warm face pool,
-// cool window-side rim and restrained edge vignette are intentionally rendered in the
-// real review viewport so CI measures the same image the parent sees.
+// Live presentation pass: preserve the last verified green warm/cool hierarchy while
+// keeping the newer, softer eye-performance plan above. Do not weaken screenshot gates.
 if(typeof document!=='undefined')queueMicrotask(()=>{
   const stage=document.getElementById('stage'); if(!stage)return;
-  const tuneCanvas=()=>{const c=stage.querySelector('canvas');if(!c)return false;c.style.filter='contrast(1.105) saturate(1.07) brightness(1.018)';return true};
+  const tuneCanvas=()=>{const c=stage.querySelector('canvas');if(!c)return false;c.style.filter='contrast(1.115) saturate(1.085) brightness(1.025)';return true};
   if(!tuneCanvas()){const mo=new MutationObserver(()=>{if(tuneCanvas())mo.disconnect()});mo.observe(stage,{childList:true})}
   for(const n of stage.querySelectorAll('.cinematic-depth-pass,.cinematic-grade-pass,.character-light-pass'))n.remove();
-  const grade=document.createElement('div');grade.className='cinematic-grade-pass';
-  Object.assign(grade.style,{position:'absolute',inset:'0',zIndex:'2',pointerEvents:'none',borderRadius:'inherit',
-    background:'radial-gradient(ellipse at 39% 31%, rgba(255,219,187,.11) 0%, rgba(255,190,143,.035) 18%, transparent 37%), radial-gradient(ellipse at 70% 31%, rgba(107,164,213,.105) 0%, rgba(65,111,156,.03) 25%, transparent 51%), linear-gradient(180deg, rgba(255,224,194,.018) 0%, transparent 42%, rgba(55,24,13,.055) 78%, rgba(16,8,5,.11) 100%)',
-    boxShadow:'inset 0 0 128px rgba(3,2,2,.24), inset 0 -72px 100px rgba(12,6,4,.16)',mixBlendMode:'soft-light',opacity:'.92'});
-  const light=document.createElement('div');light.className='character-light-pass';
-  Object.assign(light.style,{position:'absolute',inset:'0',zIndex:'2',pointerEvents:'none',borderRadius:'inherit',
-    background:'radial-gradient(ellipse at 39% 36%, rgba(255,230,204,.055) 0%, transparent 24%), radial-gradient(ellipse at 49% 48%, transparent 0%, transparent 28%, rgba(4,2,2,.055) 57%, rgba(3,2,2,.11) 100%)',
-    mixBlendMode:'screen',opacity:'.48'});
-  stage.append(grade,light);
+  const d=document.createElement('div');d.className='cinematic-grade-pass';
+  Object.assign(d.style,{position:'absolute',inset:'0',zIndex:'2',pointerEvents:'none',borderRadius:'inherit',
+    background:'radial-gradient(ellipse at 31% 31%, rgba(255,210,167,.10) 0%, rgba(255,190,132,.035) 23%, transparent 47%), radial-gradient(ellipse at 80% 29%, rgba(105,164,215,.105) 0%, rgba(64,112,158,.032) 30%, transparent 55%), radial-gradient(ellipse at 50% 88%, rgba(211,103,54,.08) 0%, transparent 38%), linear-gradient(90deg, rgba(16,8,5,.10) 0%, transparent 18% 77%, rgba(7,14,23,.11) 100%)',
+    boxShadow:'inset 0 0 145px rgba(3,2,2,.32), inset 0 -95px 120px rgba(12,6,4,.20), inset 0 70px 105px rgba(255,215,176,.025)',mixBlendMode:'soft-light',opacity:'.98'});
+  stage.appendChild(d);
 });
