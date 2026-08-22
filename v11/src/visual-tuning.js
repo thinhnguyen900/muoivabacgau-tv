@@ -4,27 +4,40 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
 function softenMaterial(material){
   if(!material)return;
-  material.roughness=clamp((material.roughness??.9)+.02,.72,.99);
-  if('clearcoat' in material)material.clearcoat=Math.min(material.clearcoat??0,.035);
-  if('clearcoatRoughness' in material)material.clearcoatRoughness=Math.max(material.clearcoatRoughness??.75,.80);
-  if('sheen' in material)material.sheen=Math.max(material.sheen??0,.16);
+  material.roughness=clamp((material.roughness??.9)+.025,.76,.99);
+  if('clearcoat' in material)material.clearcoat=Math.min(material.clearcoat??0,.028);
+  if('clearcoatRoughness' in material)material.clearcoatRoughness=Math.max(material.clearcoatRoughness??.75,.84);
+  if('sheen' in material)material.sheen=Math.max(material.sheen??0,.18);
   material.needsUpdate=true;
 }
 
 function tuneEye(eyeCtl,side){
   if(!eyeCtl)return;
-  eyeCtl.position.x=side*.382;
-  eyeCtl.position.y=.272;
-  eyeCtl.position.z=.798;
+  eyeCtl.position.x=side*.374;
+  eyeCtl.position.y=.268;
+  eyeCtl.position.z=.790;
+  eyeCtl.rotation.z=side*-.012;
   const [sclera,iris,pupil,catchlight,upperRim,lowerRim,lowerLid,lid]=eyeCtl.children;
-  if(sclera){sclera.scale.set(.80,.60,.255);softenMaterial(sclera.material);}
-  if(iris){iris.scale.set(1.05,.90,.92);iris.position.z=.186;}
-  if(pupil){pupil.scale.set(1.06,.96,.93);pupil.position.z=.255;}
-  if(catchlight){catchlight.scale.set(.78,.78,.78);catchlight.position.set(-.024,.032,.307);}
-  if(upperRim){upperRim.scale.y=.86;upperRim.position.y=.036;}
-  if(lowerRim){lowerRim.scale.y=.82;lowerRim.position.y=-.095;}
-  if(lowerLid){lowerLid.position.y=-.151;lowerLid.scale.y=.082;}
-  if(lid){lid.position.y=.120;lid.scale.y=.115;lid.userData.baseY=.120;}
+  if(sclera){
+    sclera.scale.set(.735,.515,.246);
+    softenMaterial(sclera.material);
+  }
+  if(iris){
+    iris.scale.set(1.12,1.02,.94);
+    iris.position.set(side*-.006,-.004,.183);
+  }
+  if(pupil){
+    pupil.scale.set(1.14,1.07,.94);
+    pupil.position.set(side*-.006,-.006,.251);
+  }
+  if(catchlight){
+    catchlight.scale.set(.72,.72,.72);
+    catchlight.position.set(-.022,.030,.304);
+  }
+  if(upperRim){upperRim.scale.set(.94,.74,.96);upperRim.position.y=.030;upperRim.position.z=.238;}
+  if(lowerRim){lowerRim.scale.set(.92,.70,.94);lowerRim.position.y=-.088;lowerRim.position.z=.232;}
+  if(lowerLid){lowerLid.position.y=-.143;lowerLid.scale.set(.90,.072,.96);}
+  if(lid){lid.position.y=.108;lid.scale.set(.91,.102,.97);lid.userData.baseY=.108;}
 }
 
 export function tuneAuthoredBear(character){
@@ -38,14 +51,22 @@ export function tuneAuthoredBear(character){
   const shoulderR=character.controls.get('shoulderRight');
 
   root.scale.set(.99,1.0,.99);
-  if(neck){neck.position.y=2.50;neck.scale.set(1.0,.97,1.0);}
+  if(neck){neck.position.y=2.49;neck.scale.set(1.0,.97,1.0);}
   if(head){
-    head.position.y=.055;
-    head.scale.set(.94,1.02,.98);
+    head.position.y=.045;
+    head.scale.set(.935,1.018,.98);
     const headShell=head.children[0];
     const forehead=head.children[1];
-    if(headShell)headShell.scale.set(.96,1.01,.90);
-    if(forehead){forehead.position.y=.45;forehead.scale.x=1.05;forehead.scale.y=.56;forehead.scale.z=.22;}
+    const cheekL=head.children[2];
+    const cheekR=head.children[3];
+    if(headShell)headShell.scale.set(.955,1.005,.895);
+    if(forehead){forehead.position.set(0,.435,.642);forehead.scale.set(1.02,.545,.218);}
+    for(const cheek of [cheekL,cheekR]){
+      if(!cheek)continue;
+      cheek.scale.set(.94,.78,.255);
+      cheek.position.y=-.245;
+      cheek.position.z=.500;
+    }
   }
 
   tuneEye(character.controls.get('eyeLeft'),-1);
@@ -54,39 +75,41 @@ export function tuneAuthoredBear(character){
   for(const key of ['browL','browR']){
     const item=character.morph?.[key];
     if(item?.brow){
-      item.brow.position.y=.545;
-      item.brow.scale.set(.92,.84,.92);
-      item.baseY=.545;
+      item.brow.position.y=.526;
+      item.brow.position.z=.778;
+      item.brow.scale.set(.88,.72,.88);
+      item.baseY=.526;
     }
   }
 
   if(muzzle){
-    muzzle.position.set(0,-.345,.625);
-    muzzle.scale.set(.94,1.01,.88);
+    muzzle.position.set(0,-.350,.600);
+    muzzle.scale.set(.91,.99,.82);
     const base=muzzle.children[0];
-    if(base){base.scale.x=1.02;base.scale.y=.58;base.scale.z=.18;}
+    if(base){base.scale.set(.98,.56,.16);base.position.y=-.028;}
     for(const cheek of muzzle.children.slice(1,3)){
-      cheek.scale.x=.95;
-      cheek.scale.y=.61;
-      cheek.scale.z=.225;
+      cheek.scale.set(.91,.58,.205);
+      cheek.position.y=.008;
     }
     const bridge=muzzle.children[3];
-    if(bridge){bridge.scale.set(.92,.42,.19);bridge.position.y=.150;}
+    if(bridge){bridge.scale.set(.87,.39,.17);bridge.position.y=.140;bridge.position.z=.060;}
     const nose=muzzle.children[4];
-    if(nose){nose.scale.set(.86,.57,.34);nose.position.y=.150;nose.position.z=.255;}
+    if(nose){nose.scale.set(.80,.52,.30);nose.position.y=.142;nose.position.z=.238;}
+    const philtrum=muzzle.children[5];
+    if(philtrum){philtrum.scale.set(.84,.92,.84);philtrum.position.z=.252;}
     const jaw=character.controls.get('jaw');
-    if(jaw){jaw.position.y=-.242;jaw.position.z=.038;jaw.scale.set(.97,.96,.93);}
+    if(jaw){jaw.position.y=-.238;jaw.position.z=.026;jaw.scale.set(.94,.93,.88);}
   }
 
-  if(shoulderL)shoulderL.position.set(-.88,2.12,.005);
-  if(shoulderR)shoulderR.position.set(.88,2.12,.005);
+  if(shoulderL)shoulderL.position.set(-.86,2.10,-.005);
+  if(shoulderR)shoulderR.position.set(.86,2.10,-.005);
   for(const role of ['armLeft','armRight']){
     const arm=character.controls.get(role);
-    if(arm)arm.position.y=-.10;
+    if(arm)arm.position.y=-.095;
   }
   for(const role of ['handLeft','handRight']){
     const hand=character.controls.get(role);
-    if(hand)hand.scale.multiplyScalar(.94);
+    if(hand)hand.scale.multiplyScalar(.92);
   }
 
   root.traverse(obj=>{
@@ -99,7 +122,7 @@ export function tuneAuthoredBear(character){
 
   return {
     applied:true,
-    visual:'mature-v5-balanced-head-soulful-eyes-integrated-muzzle',
-    notes:['reduced sclera exposure','de-projected muzzle','narrower shoulders','softer material response']
+    visual:'mature-v6-soft-almond-eyes-integrated-cheeks-muzzle',
+    notes:['reduced visible sclera','larger warmer iris/pupil','lower softer brows','integrated side cheeks','shorter flatter muzzle and nose','narrower relaxed shoulders']
   };
 }
