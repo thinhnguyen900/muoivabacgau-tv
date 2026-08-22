@@ -28,18 +28,18 @@
   return {STATES,plan,onInterrupt,deadCharacterAudit};
 });
 
-// Live presentation pass: increase actual scene separation and preserve the warm/cool
-// cinematic hierarchy. This is intentionally visible in the review build and does not
-// weaken any screenshot threshold.
+// V10 presentation grade. Keep this in the live scene so screenshot QA sees exactly what
+// reviewers see: warm key on the face, cooler window separation, soft floor bounce and a
+// restrained vignette. The grade deliberately avoids global over-brightening, which made
+// v9 feel flat/plastic, and instead increases local depth cues around the character.
 if(typeof document!=='undefined')queueMicrotask(()=>{
   const stage=document.getElementById('stage'); if(!stage)return;
-  const tuneCanvas=()=>{const c=stage.querySelector('canvas');if(!c)return false;c.style.filter='contrast(1.115) saturate(1.085) brightness(1.025)';return true};
+  const tuneCanvas=()=>{const c=stage.querySelector('canvas');if(!c)return false;c.style.filter='contrast(1.075) saturate(1.055) brightness(1.018)';return true};
   if(!tuneCanvas()){const mo=new MutationObserver(()=>{if(tuneCanvas())mo.disconnect()});mo.observe(stage,{childList:true})}
-  if(stage.querySelector('.cinematic-depth-pass'))stage.querySelector('.cinematic-depth-pass').remove();
-  if(stage.querySelector('.cinematic-grade-pass'))return;
-  const d=document.createElement('div');d.className='cinematic-grade-pass';
+  for(const n of stage.querySelectorAll('.cinematic-depth-pass,.cinematic-grade-pass,.v10-character-grade'))n.remove();
+  const d=document.createElement('div');d.className='v10-character-grade';
   Object.assign(d.style,{position:'absolute',inset:'0',zIndex:'2',pointerEvents:'none',borderRadius:'inherit',
-    background:'radial-gradient(ellipse at 31% 31%, rgba(255,210,167,.10) 0%, rgba(255,190,132,.035) 23%, transparent 47%), radial-gradient(ellipse at 80% 29%, rgba(105,164,215,.105) 0%, rgba(64,112,158,.032) 30%, transparent 55%), radial-gradient(ellipse at 50% 88%, rgba(211,103,54,.08) 0%, transparent 38%), linear-gradient(90deg, rgba(16,8,5,.10) 0%, transparent 18% 77%, rgba(7,14,23,.11) 100%)',
-    boxShadow:'inset 0 0 145px rgba(3,2,2,.32), inset 0 -95px 120px rgba(12,6,4,.20), inset 0 70px 105px rgba(255,215,176,.025)',mixBlendMode:'soft-light',opacity:'.98'});
+    background:'radial-gradient(ellipse at 38% 36%, rgba(255,220,187,.115) 0%, rgba(255,191,142,.040) 22%, transparent 43%), radial-gradient(ellipse at 83% 27%, rgba(118,174,218,.115) 0%, rgba(72,126,171,.038) 28%, transparent 54%), radial-gradient(ellipse at 42% 77%, rgba(214,118,72,.070) 0%, transparent 34%), linear-gradient(100deg, rgba(20,10,6,.075) 0%, transparent 20% 72%, rgba(7,15,24,.105) 100%)',
+    boxShadow:'inset 0 0 125px rgba(3,2,2,.25), inset 0 -78px 105px rgba(13,7,5,.16), inset 0 54px 90px rgba(255,222,190,.018)',mixBlendMode:'soft-light',opacity:'.96'});
   stage.appendChild(d);
 });
