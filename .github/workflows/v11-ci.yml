@@ -4,6 +4,10 @@ on:
     branches: [v11-rigged-character]
     paths: ['v11/**','.github/workflows/v11-ci.yml']
   workflow_dispatch:
+
+permissions:
+  contents: write
+
 jobs:
   same-artifact-browser-gate:
     runs-on: ubuntu-latest
@@ -23,11 +27,55 @@ jobs:
         run: npm run preview > /tmp/v11-preview.log 2>&1 &
       - name: Chromium + WebKit smoke gate
         run: npm run test:smoke
+      - name: Write immutable V11 green manifest
+        if: success()
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          fs.mkdirSync('evidence',{recursive:true});
+          const pngs=fs.readdirSync('evidence').filter(f=>f.endsWith('.png'));
+          const manifest={
+            ok:true,
+            source_commit:process.env.SOURCE_SHA,
+            generated_at_utc:new Date().toISOString(),
+            render:'real-playwright-webgl',
+            browsers:['chromium','webkit'],
+            screenshots:pngs,
+            rule:'Only a successful same-artifact browser run may publish V11 evidence.'
+          };
+          fs.writeFileSync('evidence/green-manifest.json',JSON.stringify(manifest,null,2));
+          NODE
       - name: Preserve rendered visual evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: v11-render-evidence-${{ github.sha }}
-          path: v11/evidence/*.png
+          path: v11/evidence/*
           if-no-files-found: warn
           retention-days: 30
+      - name: Publish green V11 evidence branch
+        if: success()
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        working-directory: .
+        run: |
+          mkdir -p /tmp/v11-green
+          cp -r v11/evidence/* /tmp/v11-green/
+          printf '%s\n' "$SOURCE_SHA" > /tmp/v11-green/source-commit.txt
+          git config user.name github-actions
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git fetch origin v11-ci-evidence || true
+          if git show-ref --verify --quiet refs/remotes/origin/v11-ci-evidence; then
+            git checkout -B v11-ci-evidence origin/v11-ci-evidence
+          else
+            git checkout --orphan v11-ci-evidence
+            git rm -rf . || true
+          fi
+          rm -rf evidence
+          mkdir -p evidence
+          cp -r /tmp/v11-green/* evidence/
+          git add evidence
+          git commit -m "V11 green rendered evidence for ${SOURCE_SHA}"
+          git push origin v11-ci-evidence
