@@ -35,13 +35,21 @@ jobs:
           mkdir -p forge/evidence
           python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/bacgau-http.log 2>&1 &
           for i in {1..30}; do curl -fsS http://127.0.0.1:4173/forge/review-gate.html >/dev/null && break; sleep 0.5; done
-      - name: Chromium WebGL and state gate
+      - name: Chromium local WebGL and state gate
         env:
           FORGE_GATE_URL: http://127.0.0.1:4173/forge/review-gate.html
         run: node forge/browser-gate.mjs
-      - name: WebKit iPhone Safari gate
+      - name: WebKit local iPhone Safari gate
         env:
           FORGE_GATE_URL: http://127.0.0.1:4173/forge/review-gate.html
+        run: node forge/safari-gate.mjs
+      - name: Chromium live production gate
+        env:
+          FORGE_GATE_URL: https://bacgau-phase2-system-v10.vercel.app/?gate=${{ github.sha }}
+        run: node forge/browser-gate.mjs
+      - name: WebKit live production iPhone gate
+        env:
+          FORGE_GATE_URL: https://bacgau-phase2-system-v10.vercel.app/?gate=${{ github.sha }}
         run: node forge/safari-gate.mjs
       - name: Upload visual evidence
         if: always()
