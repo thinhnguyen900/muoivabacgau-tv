@@ -1,0 +1,16 @@
+{
+  "name": "bacgau-pass8-safari-public",
+  "private": true,
+  "version": "8.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "three": "0.179.1"
+  },
+  "devDependencies": {
+    "vite": "7.1.3"
+  }
+}
