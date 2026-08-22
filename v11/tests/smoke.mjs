@@ -47,7 +47,7 @@ for (const engine of [chromium, webkit]) {
   if (!state.v11?.model && state.v11?.mode !== 'authored-fallback') throw new Error(`${engine.name()} no reviewable character runtime ${JSON.stringify(state.v11)}`);
   if (state.v11?.mode === 'authored-fallback' && (state.v11?.report?.controls?.length || 0) < 10) throw new Error(`${engine.name()} fallback rig too shallow ${JSON.stringify(state.v11?.report)}`);
   if (state.v11?.mode === 'authored-fallback' && state.v11?.report?.visualTune?.applied !== true) throw new Error(`${engine.name()} mature visual tuning missing ${JSON.stringify(state.v11?.report)}`);
-  if (state.v11?.visualPipeline !== 'authored-warm-v5-mature-portrait') throw new Error(`${engine.name()} wrong visual pipeline ${JSON.stringify(state.v11)}`);
+  if (state.v11?.visualPipeline !== 'authored-warm-v6-soft-portrait') throw new Error(`${engine.name()} wrong visual pipeline ${JSON.stringify(state.v11)}`);
   if (!state.canvas || state.canvas.width < 800 || state.canvas.height < 500) throw new Error(`${engine.name()} WebGL canvas gate failed ${JSON.stringify(state.canvas)}`);
   if (errors.length) throw new Error(`${engine.name()} errors: ${errors.join(' | ')}`);
   await page.waitForTimeout(1200);
