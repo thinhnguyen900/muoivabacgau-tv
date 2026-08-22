@@ -22,6 +22,35 @@ const BONE_ALIASES = {
 const normalize = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 const clamp11 = v => THREE.MathUtils.clamp(v, -1, 1);
 
+function materialRole(obj, material) {
+  const key = normalize(`${obj?.name || ''} ${material?.name || ''}`);
+  if (/eye|iris|pupil|cornea/.test(key)) return 'eye';
+  if (/nose|nostril/.test(key)) return 'nose';
+  if (/mouth|lip|tongue|gum|teeth|tooth/.test(key)) return 'mouth';
+  if (/fur|hair|coat|body|head|face|muzzle|cheek|ear|arm|hand|torso/.test(key)) return 'fur';
+  return 'generic';
+}
+
+function tuneMaterial(obj, material) {
+  if (!material) return;
+  const role = materialRole(obj, material);
+  material.dithering = true;
+  if ('metalness' in material) material.metalness = Math.min(material.metalness ?? 0, 0.025);
+  if ('envMapIntensity' in material) material.envMapIntensity = Math.min(material.envMapIntensity ?? 1, role === 'eye' ? 0.95 : 0.62);
+  if ('roughness' in material) {
+    const current = material.roughness ?? 0.72;
+    const targets = { eye: 0.28, nose: 0.46, mouth: 0.58, fur: 0.82, generic: 0.72 };
+    material.roughness = role === 'eye' ? Math.min(current, targets.eye) : Math.max(current, targets[role]);
+  }
+  if ('clearcoat' in material) {
+    material.clearcoat = role === 'eye' ? Math.max(material.clearcoat ?? 0, 0.25) : Math.min(material.clearcoat ?? 0, 0.06);
+    material.clearcoatRoughness = role === 'eye' ? 0.18 : 0.8;
+  }
+  if ('normalScale' in material && material.normalScale?.isVector2 && role === 'fur') material.normalScale.multiplyScalar(0.72);
+  if (material.map) material.map.colorSpace = THREE.SRGBColorSpace;
+  material.needsUpdate = true;
+}
+
 export class CharacterRuntime {
   constructor({ scene, onStatus = () => {} }) {
     this.scene = scene;
@@ -34,6 +63,7 @@ export class CharacterRuntime {
     this.controls = new Map();
     this.bind = new Map();
     this.ready = false;
+    this.bounds = null;
   }
 
   async load(url) {
@@ -46,13 +76,7 @@ export class CharacterRuntime {
         obj.castShadow = true;
         obj.receiveShadow = true;
         const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
-        for (const material of materials) {
-          if (!material) continue;
-          if ('roughness' in material) material.roughness = Math.max(material.roughness ?? 0.72, 0.62);
-          if ('metalness' in material) material.metalness = Math.min(material.metalness ?? 0, 0.05);
-          if ('envMapIntensity' in material) material.envMapIntensity = Math.min(material.envMapIntensity ?? 1, 0.75);
-          material.needsUpdate = true;
-        }
+        for (const material of materials) tuneMaterial(obj, material);
       }
       if (obj.isBone) {
         const key = normalize(obj.name);
@@ -91,10 +115,12 @@ export class CharacterRuntime {
     const box = new THREE.Box3().setFromObject(this.root);
     const size = box.getSize(new THREE.Vector3());
     const center = box.getCenter(new THREE.Vector3());
-    const target = 4.7;
-    const scale = target / Math.max(size.y, .001);
+    const targetHeight = 4.75;
+    const scale = targetHeight / Math.max(size.y, .001);
     this.root.scale.setScalar(scale);
     this.root.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
+    this.root.updateMatrixWorld(true);
+    this.bounds = new THREE.Box3().setFromObject(this.root);
   }
 
   inspect() {
@@ -102,7 +128,15 @@ export class CharacterRuntime {
     const missingBones = REQUIRED_BONE_HINTS.filter(h => !names.some(n => n.includes(h)));
     const facial = {};
     for (const [role, aliases] of Object.entries(FACIAL_ALIASES)) facial[role] = aliases.some(a => this.morphs.has(normalize(a)));
-    return { bones: this.bones.size, morphTargets: this.morphs.size, clips: this.actions.size, controls: [...this.controls.keys()], missingBones, facial };
+    return {
+      bones: this.bones.size,
+      morphTargets: this.morphs.size,
+      clips: this.actions.size,
+      controls: [...this.controls.keys()],
+      missingBones,
+      facial,
+      bounds: this.bounds ? this.bounds.getSize(new THREE.Vector3()).toArray().map(v => Number(v.toFixed(3))) : null,
+    };
   }
 
   findAction(candidates = []) {
@@ -150,11 +184,11 @@ export class CharacterRuntime {
   }
 
   setGaze(x = 0, y = 0) {
-    const yaw = clamp11(x) * 0.10;
-    const pitch = clamp11(y) * 0.075;
+    const yaw = clamp11(x) * 0.085;
+    const pitch = clamp11(y) * 0.06;
     const left = this.setBonePose('eyeLeft', { x: pitch, y: yaw }, 1);
     const right = this.setBonePose('eyeRight', { x: pitch, y: yaw }, 1);
-    if (!(left || right)) this.setBonePose('head', { x: pitch * 0.22, y: yaw * 0.22 }, 1);
+    if (!(left || right)) this.setBonePose('head', { x: pitch * 0.18, y: yaw * 0.18 }, 1);
     return left || right;
   }
 
