@@ -2,10 +2,12 @@ name: Bác Gấu Safari Gate
 on:
   push:
     branches: [pass82-safari-full]
+    paths-ignore:
+      - 'forge/evidence/safari-ci-status.txt'
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   safari-gate:
@@ -48,3 +50,16 @@ jobs:
           name: bacgau-pass82-safari-evidence
           path: forge/evidence/
           if-no-files-found: warn
+      - name: Publish gate status marker
+        if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+          SOURCE_SHA: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          printf 'status=%s\nsource=%s\nrun=%s\n' "$JOB_STATUS" "$SOURCE_SHA" "$RUN_ID" > forge/evidence/safari-ci-status.txt
+          git config user.name github-actions
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add forge/evidence/safari-ci-status.txt
+          git commit -m "ci: Safari gate ${JOB_STATUS} [skip ci]" || exit 0
+          git push origin HEAD:pass82-safari-full
