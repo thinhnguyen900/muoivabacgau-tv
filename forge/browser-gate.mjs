@@ -52,7 +52,7 @@ if(pageErrors.length)throw new Error(`Browser console/page errors: ${pageErrors.
 const body=await page.evaluate(()=>window.__BACGAU_BODY_V2__||null);
 const required=['faceGeometryRepaired','eyesVisible','muzzleForward','blink','gaze','breathing','brows','jaw','audioDrivenMouth','visibleStateGestures'];
 for(const k of required)if(!body?.[k])throw new Error(`Body contract missing ${k}: ${JSON.stringify(body)}`);
-if(body.visualVersion!=='v10-face-motion')throw new Error(`Wrong visual version: ${JSON.stringify(body)}`);
+if(body.visualVersion!=='v10.1-safari-boot')throw new Error(`Wrong visual version: ${JSON.stringify(body)}`);
 fs.mkdirSync('forge/evidence',{recursive:true});
 fs.writeFileSync('forge/evidence/browser-gate.json',JSON.stringify({ok:true,url,geometry,states:4,scenarioSpeech:scenarioEvidence,body,render:'procedural-webgl-threejs',pageErrors},null,2));
 await browser.close();
