@@ -1,21 +1,15 @@
 # Bác Gấu V11 — Rigged Character
 
-V11 is a hard architectural reset for character quality. The browser no longer builds the bear from spheres/boxes. It loads a production GLB with real mesh, textures, skeleton, animation clips and facial morph targets.
+V11 uses a real rigged GLB character and never falls back to a procedural sphere/box bear.
 
-## Character target
-- Friendly cinematic 3D brown bear, rich fur, large expressive eyes, soft muzzle, natural paws.
-- Yellow hoodie as the signature costume.
-- Warm, smart, safe companion for Muối — not a toy-like procedural mascot.
-- Reference quality is the latest approved Bác Gấu render from 22 Aug 2026.
+## V11.1 visual direction: mature mentor
 
-## Pipeline
-1. Character reference image -> Meshy/Tripo image-to-3D.
-2. Smart topology/remesh before rigging.
-3. Biped rig; Tripo preferred for rig flexibility, Meshy kept as A/B fallback.
-4. Export GLB into `public/character/bac-gau.glb`.
-5. Runtime inspects skeleton/morphs/clips before enabling interaction.
-6. `AnimationMixer` blends idle/wave/listen/think/playful clips.
-7. Audio analyser drives `jawOpen`; facial morphs drive blink/smile.
-8. Chromium and WebKit test the same built artifact.
+Bác Gấu must feel like a mature, wise, trustworthy adult companion for Muối: warm, calm, protective, emotionally safe, with deeper-set eyes, defined brows, a restrained smile, realistic soft brown fur, sturdy shoulders/paws, and a yellow hoodie that reads adult rather than babyish.
 
-API keys are environment variables and are never committed.
+Avoid baby-bear proportions, oversized chibi eyes, toy-mascot styling, exaggerated grins, plastic fur, and bouncy childish motion.
+
+The approved source reference is `reference/bacgau-mature-reference.jpg`; the machine-readable brief is `reference/character-brief.json`.
+
+## Generation
+
+GitHub Actions workflow `.github/workflows/v11-generate-character.yml` uses the repository secret `TRIPO_API_KEY` to generate and rig `public/character/bac-gau.glb` from the approved mature reference. The runtime then loads that exact GLB.
