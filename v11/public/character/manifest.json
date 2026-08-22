@@ -1,0 +1,4 @@
+{
+  "character":"Bac Gau","version":"11.0","model":"bac-gau.glb","qualityTarget":"cinematic-friendly-3d-bear-yellow-hoodie",
+  "requirements":{"singleConnectedCharacterMesh":true,"texturedPBR":true,"bipedSkeleton":true,"facialMorphsPreferred":["jawOpen","eyeBlinkLeft","eyeBlinkRight","smile"],"minimumAnimations":["idle","wave","listen","think","playful"],"forbidProceduralBodyGeometry":true}
+}
