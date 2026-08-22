@@ -7,32 +7,51 @@ on:
       - 'v11/scripts/generate-tripo.mjs'
       - '.github/workflows/v11-generate-character.yml'
   workflow_dispatch:
+
+concurrency:
+  group: v11-tripo-generation
+  cancel-in-progress: true
+
 permissions:
   contents: write
+
 jobs:
   generate-mature-bac-gau:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: v11-rigged-character
+          fetch-depth: 0
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+
+      - name: Verify Tripo secret
+        env:
+          TRIPO_API_KEY: ${{ secrets.TRIPO_API_KEY }}
+        run: test -n "$TRIPO_API_KEY"
+
       - name: Generate mature mentor rigged GLB with Tripo
         working-directory: v11
         env:
           TRIPO_API_KEY: ${{ secrets.TRIPO_API_KEY }}
         run: node scripts/generate-tripo.mjs reference/bacgau-mature-reference.jpg public/character
+
       - name: Validate generated GLB
         run: |
           test -s v11/public/character/bac-gau.glb
+          test -s v11/public/character/generation-manifest.json
           ls -lh v11/public/character/bac-gau.glb
           cat v11/public/character/generation-manifest.json
-      - name: Commit generated GLB
+
+      - name: Commit generated GLB onto latest branch
         run: |
           git config user.name github-actions
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add v11/public/character/bac-gau.glb v11/public/character/generation-manifest.json
           git commit -m 'chore(v11): generate mature mentor Bác Gấu GLB [skip ci]' || exit 0
+          git pull --rebase origin v11-rigged-character
           git push origin HEAD:v11-rigged-character
-# automation retrigger: mature mentor generation
