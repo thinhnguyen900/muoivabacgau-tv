@@ -1,0 +1,40 @@
+name: Bác Gấu Mouth Visual Hotfix
+on:
+  push:
+    branches: [pass82-safari-full]
+    paths:
+      - '.github/workflows/mouth-visual-hotfix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-mouth-scale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: pass82-safari-full
+          fetch-depth: 0
+      - name: Patch runaway mouth scale
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('forge/review-gate.html')
+          s=p.read_text()
+          old="u.mouth.scale.y=lerp(u.mouth.scale.y,speaking?.9+3.0*talk:.75,.28);u.mouth.scale.x=lerp(u.mouth.scale.x,speaking?.95+0.12*Math.sin(aTime*5.2):1,.18);"
+          new="u.mouth.scale.y=lerp(u.mouth.scale.y,.032*(speaking?.9+3.0*talk:.75),.28);u.mouth.scale.x=lerp(u.mouth.scale.x,.14*(speaking?.95+0.12*Math.sin(aTime*5.2):1),.18);"
+          count=s.count(old)
+          if count != 1:
+              raise SystemExit(f'Expected exactly one runaway mouth-scale expression, found {count}')
+          s=s.replace(old,new)
+          p.write_text(s)
+          print('mouth scale patched: baseX=.14 baseY=.032')
+          PY
+      - name: Commit visual fix
+        run: |
+          git config user.name github-actions
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add forge/review-gate.html
+          git commit -m 'fix: preserve mouth base scale during lip sync'
+          git push origin HEAD:pass82-safari-full
