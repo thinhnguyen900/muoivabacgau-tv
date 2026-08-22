@@ -11,7 +11,7 @@ function variance(buf) {
   for(let y=0;y<png.height;y+=4) for(let x=0;x<png.width;x+=4){
     const i=(y*png.width+x)*4,r=png.data[i],g=png.data[i+1],b=png.data[i+2];
     const l=.2126*r+.7152*g+.0722*b;sum+=l;sum2+=l*l;n++;
-    if(Math.abs(r-135)+Math.abs(g-169)+Math.abs(b-161)>38) nonSky++;
+    if(Math.abs(r-131)+Math.abs(g-164)+Math.abs(b-157)>38) nonSky++;
   }
   const mean=sum/n;return {std:Math.sqrt(Math.max(0,sum2/n-mean*mean)),nonBackdropRatio:nonSky/n};
 }
@@ -46,6 +46,8 @@ for (const engine of [chromium, webkit]) {
   if (!state.posterHidden) throw new Error(`${engine.name()} poster fallback visible`);
   if (!state.v11?.model && state.v11?.mode !== 'authored-fallback') throw new Error(`${engine.name()} no reviewable character runtime ${JSON.stringify(state.v11)}`);
   if (state.v11?.mode === 'authored-fallback' && (state.v11?.report?.controls?.length || 0) < 10) throw new Error(`${engine.name()} fallback rig too shallow ${JSON.stringify(state.v11?.report)}`);
+  if (state.v11?.mode === 'authored-fallback' && state.v11?.report?.visualTune?.applied !== true) throw new Error(`${engine.name()} mature visual tuning missing ${JSON.stringify(state.v11?.report)}`);
+  if (state.v11?.visualPipeline !== 'authored-warm-v5-mature-portrait') throw new Error(`${engine.name()} wrong visual pipeline ${JSON.stringify(state.v11)}`);
   if (!state.canvas || state.canvas.width < 800 || state.canvas.height < 500) throw new Error(`${engine.name()} WebGL canvas gate failed ${JSON.stringify(state.canvas)}`);
   if (errors.length) throw new Error(`${engine.name()} errors: ${errors.join(' | ')}`);
   await page.waitForTimeout(1200);
