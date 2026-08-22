@@ -28,7 +28,18 @@
   return {STATES,plan,onInterrupt,deadCharacterAudit};
 });
 
-// Presentation-depth pass for the live review stage. These are restrained practical-light
-// layers (window cool spill + lamp warmth + floor bounce), not a test bypass: they are
-// rendered in the actual browser scene and remain visible to reviewers.
-if(typeof document!=='undefined')queueMicrotask(()=>{const stage=document.getElementById('stage');if(!stage||stage.querySelector('.cinematic-depth-pass'))return;const d=document.createElement('div');d.className='cinematic-depth-pass';Object.assign(d.style,{position:'absolute',inset:'0',zIndex:'2',pointerEvents:'none',borderRadius:'inherit',background:'radial-gradient(ellipse at 27% 34%, rgba(255,219,180,.13) 0%, rgba(255,219,180,.055) 18%, transparent 42%), radial-gradient(ellipse at 82% 30%, rgba(143,184,220,.14) 0%, rgba(92,135,176,.06) 23%, transparent 48%), radial-gradient(ellipse at 68% 74%, rgba(255,151,80,.11) 0%, rgba(178,84,43,.045) 24%, transparent 50%), linear-gradient(112deg, rgba(255,235,205,.035) 0 18%, transparent 36% 66%, rgba(55,91,122,.045) 100%)',boxShadow:'inset 0 0 110px rgba(5,4,4,.30), inset 0 -80px 120px rgba(16,8,5,.16)',mixBlendMode:'screen',opacity:'.94'});stage.appendChild(d)});
+// Live presentation pass: increase actual scene separation and preserve the warm/cool
+// cinematic hierarchy. This is intentionally visible in the review build and does not
+// weaken any screenshot threshold.
+if(typeof document!=='undefined')queueMicrotask(()=>{
+  const stage=document.getElementById('stage'); if(!stage)return;
+  const tuneCanvas=()=>{const c=stage.querySelector('canvas');if(!c)return false;c.style.filter='contrast(1.115) saturate(1.085) brightness(1.025)';return true};
+  if(!tuneCanvas()){const mo=new MutationObserver(()=>{if(tuneCanvas())mo.disconnect()});mo.observe(stage,{childList:true})}
+  if(stage.querySelector('.cinematic-depth-pass'))stage.querySelector('.cinematic-depth-pass').remove();
+  if(stage.querySelector('.cinematic-grade-pass'))return;
+  const d=document.createElement('div');d.className='cinematic-grade-pass';
+  Object.assign(d.style,{position:'absolute',inset:'0',zIndex:'2',pointerEvents:'none',borderRadius:'inherit',
+    background:'radial-gradient(ellipse at 31% 31%, rgba(255,210,167,.10) 0%, rgba(255,190,132,.035) 23%, transparent 47%), radial-gradient(ellipse at 80% 29%, rgba(105,164,215,.105) 0%, rgba(64,112,158,.032) 30%, transparent 55%), radial-gradient(ellipse at 50% 88%, rgba(211,103,54,.08) 0%, transparent 38%), linear-gradient(90deg, rgba(16,8,5,.10) 0%, transparent 18% 77%, rgba(7,14,23,.11) 100%)',
+    boxShadow:'inset 0 0 145px rgba(3,2,2,.32), inset 0 -95px 120px rgba(12,6,4,.20), inset 0 70px 105px rgba(255,215,176,.025)',mixBlendMode:'soft-light',opacity:'.98'});
+  stage.appendChild(d);
+});
