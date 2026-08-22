@@ -69,6 +69,9 @@ jobs:
           node brain/tests/parent-guidance.sim.mjs
           node brain/tests/brain-to-body.test.mjs
 
+      - name: Parent Guidance vertical slice Brain Body Voice gate
+        run: node forge/vertical-slice-guidance.test.js
+
       - name: Serve forge gate and verify every runtime resource
         run: |
           python -m http.server 4173 --bind 127.0.0.1 > /tmp/bacgau-http.log 2>&1 &
@@ -115,7 +118,7 @@ jobs:
             'visual_v3_legacy':read('forge/evidence/visual-v3-gate.json'),
             'visual_v3_state_diff_legacy':read('forge/evidence/visual-v3-state-diff.json'),
             'voice':read('forge/evidence/voice-gate.json'),
-            'turn_runtime':{'ok':True,'unified_pipeline':True,'interruptible':True,'locale_bound':True},
+            'turn_runtime':{'ok':True,'unified_pipeline':True,'interruptible':True,'locale_bound':True,'parent_guidance_vertical_slice':True},
             'render':{'mode':'procedural-webgl-threejs-visual-v5','binary_image_transport':False},
             'rule':'Only this manifest from a fully green job may authorize review promotion.'
           }
