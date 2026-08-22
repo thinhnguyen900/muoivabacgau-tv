@@ -1,0 +1,50 @@
+name: Bác Gấu Safari Gate
+on:
+  push:
+    branches: [pass82-safari-full]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  safari-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright browsers
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium webkit
+      - name: Verify remote runtime dependencies
+        run: |
+          curl -fLsS --retry 3 -o /tmp/three.js https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js
+          test -s /tmp/three.js
+          curl -fLsS --retry 3 -o /tmp/vi.mp3 'https://bacgau-pass82-safari-full.vercel.app/api/asset?name=vi-test.mp3'
+          test -s /tmp/vi.mp3
+          curl -fLsS --retry 3 -o /tmp/welcome.mp3 'https://bacgau-pass82-safari-full.vercel.app/api/asset?name=scenario-welcoming.mp3'
+          test -s /tmp/welcome.mp3
+      - name: Serve current review gate
+        run: |
+          mkdir -p forge/evidence
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/bacgau-http.log 2>&1 &
+          for i in {1..30}; do curl -fsS http://127.0.0.1:4173/forge/review-gate.html >/dev/null && break; sleep 0.5; done
+      - name: Chromium WebGL and state gate
+        env:
+          FORGE_GATE_URL: http://127.0.0.1:4173/forge/review-gate.html
+        run: node forge/browser-gate.mjs
+      - name: WebKit iPhone Safari gate
+        env:
+          FORGE_GATE_URL: http://127.0.0.1:4173/forge/review-gate.html
+        run: node forge/safari-gate.mjs
+      - name: Upload visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bacgau-pass82-safari-evidence
+          path: forge/evidence/
+          if-no-files-found: warn
