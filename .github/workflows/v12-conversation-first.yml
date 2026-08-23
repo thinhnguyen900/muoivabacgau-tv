@@ -1,0 +1,63 @@
+name: Bác Gấu V12 Conversation First
+on:
+  push:
+    branches: [v12-conversation-first]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  conversation-first-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Lock proven conversation architecture
+        run: |
+          test -s forge/conversation-recovery.html
+          test -s forge/conversation-bridge.js
+          grep -q 'id="mic"' forge/conversation-recovery.html
+          grep -q 'src="/api/body"' forge/conversation-recovery.html
+          grep -q '/api/transcribe' forge/conversation-bridge.js
+          grep -q '/api/chat' forge/conversation-bridge.js
+          grep -q '/api/tts' forge/conversation-bridge.js
+          grep -q "type:'bacgau-state'" forge/conversation-recovery.html
+          grep -q "bacgau-body-ready" forge/conversation-recovery.html
+          grep -q "3D chưa khởi tạo được" api/body.js
+          grep -q "v12-conversation-first-2-wise-face" api/body.js
+
+      - name: Install Chromium and WebKit gates
+        run: |
+          npm install --no-save playwright@1.55.0 pngjs@7.0.0
+          npx playwright install --with-deps chromium webkit
+
+      - name: Serve conversation shell with live body handler
+        run: |
+          node forge/v12-ci-server.mjs > /tmp/v12-server.log 2>&1 &
+          echo $! > /tmp/v12-server.pid
+          for i in {1..30}; do
+            curl -fsS http://127.0.0.1:4173/forge/conversation-recovery.html >/dev/null && curl -fsS http://127.0.0.1:4173/api/body >/dev/null && break
+            sleep 0.5
+          done
+          curl -fsS http://127.0.0.1:4173/forge/conversation-recovery.html | grep -q 'conversation-bridge.js'
+          curl -fsS http://127.0.0.1:4173/api/body | grep -q 'Bác Gấu 3D'
+
+      - name: Chromium + iPhone WebKit non-blank and state-response gate
+        env:
+          V12_GATE_URL: http://127.0.0.1:4173/forge/conversation-recovery.html
+        run: node forge/v12-conversation-gate.mjs
+
+      - name: Upload V12 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bacgau-v12-conversation-first-evidence
+          path: |
+            forge/evidence/v12-conversation-gate.json
+            /tmp/v12-server.log
+          if-no-files-found: warn
