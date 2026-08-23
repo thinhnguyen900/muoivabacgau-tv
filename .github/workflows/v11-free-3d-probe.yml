@@ -11,9 +11,9 @@ permissions:
   contents: write
 
 jobs:
-  generate-free-candidate:
+  generate-free-candidates:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,9 +21,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install free forge client and mesh validator
-        run: pip install --disable-pip-version-check --quiet gradio_client trimesh pygltflib numpy
-      - name: Generate Stable Fast 3D candidate from approved mature reference
+      - name: Install free forge clients and mesh validators
+        run: pip install --disable-pip-version-check --quiet gradio_client trimesh pygltflib numpy pillow
+      - name: Probe public ZeroGPU Spaces and validate every returned mesh
         run: |
           python - <<'PY'
           import json, shutil, traceback
@@ -31,107 +31,179 @@ jobs:
           from gradio_client import Client, handle_file
           import trimesh
 
-          ref = Path('v11/reference/bacgau-mature-reference.jpg')
-          out_dir = Path('v11/public/character/candidates')
-          out_dir.mkdir(parents=True, exist_ok=True)
-          evidence = {'provider':'stabilityai/stable-fast-3d','reference':str(ref),'ok':False}
+          REF = Path('v11/reference/bacgau-mature-reference.jpg')
+          OUT = Path('v11/public/character/candidates')
+          OUT.mkdir(parents=True, exist_ok=True)
+          EVIDENCE = {'reference': str(REF), 'providers': [], 'winner': None}
 
-          def find_glb(value):
-              if isinstance(value, str) and value.lower().endswith('.glb') and Path(value).exists():
-                  return Path(value)
+          def find_model(value):
+              if isinstance(value, str):
+                  p = Path(value)
+                  if p.exists() and p.suffix.lower() in ('.glb','.gltf','.obj','.ply'):
+                      return p
               if isinstance(value, dict):
-                  for key in ('path','value','name'):
+                  for key in ('path','value','name','file'):
                       p = value.get(key)
-                      if isinstance(p, str) and p.lower().endswith('.glb') and Path(p).exists():
-                          return Path(p)
+                      if isinstance(p, str):
+                          pp = Path(p)
+                          if pp.exists() and pp.suffix.lower() in ('.glb','.gltf','.obj','.ply'):
+                              return pp
                   for v in value.values():
-                      r = find_glb(v)
+                      r = find_model(v)
                       if r: return r
               if isinstance(value, (list, tuple)):
                   for v in value:
-                      r = find_glb(v)
+                      r = find_model(v)
                       if r: return r
               return None
 
-          try:
-              client = Client('stabilityai/stable-fast-3d', verbose=False)
-              img = handle_file(str(ref))
-
-              # First let the Space create its background-removed conditioning state.
-              prep = client.predict(img, 0.85, api_name='/requires_bg_remove')
-              evidence['prep_type'] = type(prep).__name__
-              evidence['prep_repr'] = repr(prep)[:3000]
-
-              bg_state = None
-              if isinstance(prep, (list, tuple)):
-                  # The endpoint outputs: run button, image-processing state,
-                  # background-removal state, preview, model, HDR row.
-                  if len(prep) > 2:
-                      bg_state = prep[2]
-              if isinstance(bg_state, dict) and 'path' in bg_state:
-                  bg_state = bg_state['path']
-              if bg_state is None:
-                  raise RuntimeError('Space did not return a usable background-removal state')
-
-              generated = client.predict(
-                  'Run', img, bg_state, 0.85, 'None', -1, 1024,
-                  api_name='/run_button'
-              )
-              evidence['run_repr'] = repr(generated)[:3000]
-              glb = find_glb(generated)
-              if not glb:
-                  raise RuntimeError('Stable Fast 3D returned no downloadable GLB')
-
-              candidate = out_dir / 'stable-fast-3d.glb'
-              shutil.copy2(glb, candidate)
-
-              scene = trimesh.load(candidate, force='scene')
+          def validate(src, provider_slug):
+              dst = OUT / f'{provider_slug}{src.suffix.lower()}'
+              shutil.copy2(src, dst)
+              scene = trimesh.load(dst, force='scene', process=False)
               meshes = [g for g in scene.geometry.values() if hasattr(g, 'vertices')]
               vertices = sum(len(m.vertices) for m in meshes)
               faces = sum(len(m.faces) for m in meshes if hasattr(m, 'faces'))
-              bounds = scene.bounds.tolist() if scene.bounds is not None else None
               extents = scene.extents.tolist() if scene.extents is not None else None
-              byte_size = candidate.stat().st_size
+              byte_size = dst.stat().st_size
               integrity = bool(meshes and vertices >= 1000 and faces >= 1000 and byte_size >= 100000)
-              evidence.update({
-                  'candidate':str(candidate),
-                  'bytes':byte_size,
-                  'mesh_count':len(meshes),
-                  'vertices':vertices,
-                  'faces':faces,
-                  'bounds':bounds,
-                  'extents':extents,
-                  'integrity_pass':integrity,
-              })
-              if not integrity:
-                  raise RuntimeError('Candidate failed basic mesh-integrity gate')
+              return dst, {
+                  'candidate': str(dst), 'bytes': byte_size, 'mesh_count': len(meshes),
+                  'vertices': vertices, 'faces': faces, 'extents': extents,
+                  'integrity_pass': integrity,
+              }
 
-              # Promote only to the runtime candidate slot; browser/render CI remains
-              # the authoritative visual gate before any parent-review link is published.
-              shutil.copy2(candidate, 'v11/public/character/bac-gau.glb')
-              evidence['ok'] = True
-          except Exception as exc:
-              evidence['error'] = f'{type(exc).__name__}: {exc}'
-              evidence['trace'] = traceback.format_exc(limit=8)
+          def endpoint_names(client):
+              try:
+                  api = client.view_api(return_format='dict')
+                  named = api.get('named_endpoints', {}) if isinstance(api, dict) else {}
+                  return list(named.keys()), api
+              except Exception as exc:
+                  return [], {'view_api_error': f'{type(exc).__name__}: {exc}'}
+
+          def try_sf3d():
+              rec = {'provider':'stabilityai/stable-fast-3d','ok':False}
+              try:
+                  c = Client(rec['provider'], verbose=False)
+                  endpoints, api = endpoint_names(c)
+                  rec['endpoints'] = endpoints
+                  img = handle_file(str(REF))
+                  generated = None
+                  errors = []
+
+                  # Current official Space exposes a preprocessing callback plus a run callback.
+                  prep_names = [n for n in endpoints if 'requires_bg_remove' in n]
+                  run_names = [n for n in endpoints if any(k in n.lower() for k in ('run_button','run_model','generate'))]
+                  if '/requires_bg_remove' not in prep_names: prep_names.append('/requires_bg_remove')
+                  if '/run_button' not in run_names: run_names.append('/run_button')
+
+                  for prep_name in prep_names:
+                      try:
+                          prep = c.predict(img, 0.85, api_name=prep_name)
+                          bg = prep[2] if isinstance(prep,(list,tuple)) and len(prep)>2 else None
+                          if isinstance(bg,dict): bg = bg.get('path') or bg.get('value')
+                          if bg is None: continue
+                          for run_name in run_names:
+                              try:
+                                  generated = c.predict('Run', img, bg, 0.85, 'None', -1, 1024, api_name=run_name)
+                                  if find_model(generated): break
+                              except Exception as e: errors.append(f'{run_name}: {type(e).__name__}: {e}')
+                          if find_model(generated): break
+                      except Exception as e: errors.append(f'{prep_name}: {type(e).__name__}: {e}')
+
+                  # Some revisions expose a direct one-image model endpoint.
+                  if not find_model(generated):
+                      for name in run_names:
+                          try:
+                              result = c.predict(img, api_name=name)
+                              if find_model(result): generated = result; break
+                          except Exception as e: errors.append(f'direct {name}: {type(e).__name__}: {e}')
+
+                  rec['errors'] = errors[-8:]
+                  model = find_model(generated)
+                  if not model: raise RuntimeError('No downloadable mesh returned')
+                  dst, stats = validate(model, 'stable-fast-3d')
+                  rec.update(stats)
+                  rec['ok'] = bool(stats['integrity_pass'])
+                  return rec, dst if rec['ok'] else None
+              except Exception as exc:
+                  rec['error'] = f'{type(exc).__name__}: {exc}'
+                  rec['trace'] = traceback.format_exc(limit=6)
+                  return rec, None
+
+          def try_hunyuan():
+              rec = {'provider':'tencent/Hunyuan3D-2','ok':False}
+              try:
+                  c = Client(rec['provider'], verbose=False)
+                  endpoints, api = endpoint_names(c)
+                  rec['endpoints'] = endpoints
+                  img = handle_file(str(REF))
+                  errors = []
+                  generated = None
+                  # Official app's shape_generation signature is:
+                  # caption,image,4x multiview,steps,cfg,seed,octree,rembg,chunks,randomize.
+                  args = [None, img, None, None, None, None, 30, 5.0, 1234, 256, True, 8000, False]
+                  preferred = [n for n in endpoints if any(k in n.lower() for k in ('generation_all','shape_generation','gen_shape'))]
+                  for n in ('/generation_all','/shape_generation'):
+                      if n not in preferred: preferred.append(n)
+                  for name in preferred:
+                      try:
+                          generated = c.predict(*args, api_name=name)
+                          if find_model(generated): break
+                      except Exception as e:
+                          errors.append(f'{name}: {type(e).__name__}: {e}')
+                  rec['errors'] = errors[-8:]
+                  model = find_model(generated)
+                  if not model: raise RuntimeError('No downloadable mesh returned')
+                  dst, stats = validate(model, 'hunyuan3d-2')
+                  rec.update(stats)
+                  rec['ok'] = bool(stats['integrity_pass'])
+                  return rec, dst if rec['ok'] else None
+              except Exception as exc:
+                  rec['error'] = f'{type(exc).__name__}: {exc}'
+                  rec['trace'] = traceback.format_exc(limit=6)
+                  return rec, None
+
+          winners = []
+          for fn in (try_sf3d, try_hunyuan):
+              rec, candidate = fn()
+              EVIDENCE['providers'].append(rec)
+              if candidate is not None: winners.append((rec, candidate))
+
+          # Never silently promote provider availability as visual quality. Put a valid mesh
+          # in the runtime slot only so browser CI can render it; visual acceptance remains separate.
+          if winners:
+              # Prefer textured GLB candidates, then mesh density, then byte size.
+              winners.sort(key=lambda x: (x[1].suffix.lower()=='.glb', x[0].get('vertices',0), x[0].get('bytes',0)), reverse=True)
+              rec, candidate = winners[0]
+              target = Path('v11/public/character/bac-gau.glb')
+              if candidate.suffix.lower() == '.glb':
+                  shutil.copy2(candidate, target)
+                  EVIDENCE['winner'] = rec['provider']
+                  EVIDENCE['runtime_candidate'] = str(target)
+              else:
+                  EVIDENCE['winner'] = rec['provider']
+                  EVIDENCE['runtime_candidate'] = None
+                  EVIDENCE['note'] = 'Winning free mesh is not GLB; retained for offline visual comparison only.'
 
           evidence_path = Path('v11/public/character/free-3d-candidate.json')
-          evidence_path.write_text(json.dumps(evidence, ensure_ascii=False, indent=2), encoding='utf-8')
+          evidence_path.parent.mkdir(parents=True, exist_ok=True)
+          evidence_path.write_text(json.dumps(EVIDENCE, ensure_ascii=False, indent=2), encoding='utf-8')
           print(evidence_path.read_text(encoding='utf-8'))
-          if not evidence['ok']:
+          if not winners:
               raise SystemExit(1)
           PY
-      - name: Persist candidate and evidence
+      - name: Persist valid free candidates and evidence
         if: success()
         run: |
           git config user.name github-actions
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add v11/public/character/candidates/stable-fast-3d.glb \
-                  v11/public/character/bac-gau.glb \
-                  v11/public/character/free-3d-candidate.json
-          git commit -m 'feat(v11): add free Stable Fast 3D candidate for rendered validation [skip forge]' || exit 0
+          git add v11/public/character/candidates v11/public/character/free-3d-candidate.json
+          test -f v11/public/character/bac-gau.glb && git add v11/public/character/bac-gau.glb || true
+          git commit -m 'feat(v11): add free ZeroGPU 3D candidates for rendered validation [skip forge]' || exit 0
           git pull --rebase origin v11-rigged-character
           git push origin HEAD:v11-rigged-character
-      - name: Preserve failure evidence locally
+      - name: Preserve probe failure evidence
         if: failure()
         uses: actions/upload-artifact@v4
         with:
