@@ -1,4 +1,4 @@
-name: Bác Gấu V11 Free 3D Probe
+name: Bác Gấu V11 Free 3D Forge
 on:
   push:
     branches: [v11-rigged-character]
@@ -11,54 +11,131 @@ permissions:
   contents: write
 
 jobs:
-  probe-free-spaces:
+  generate-free-candidate:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: v11-rigged-character
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install Gradio client
-        run: pip install --disable-pip-version-check --quiet gradio_client
-      - name: Probe free public 3D Spaces
+      - name: Install free forge client and mesh validator
+        run: pip install --disable-pip-version-check --quiet gradio_client trimesh pygltflib numpy
+      - name: Generate Stable Fast 3D candidate from approved mature reference
         run: |
           python - <<'PY'
-          import json, traceback
+          import json, shutil, traceback
           from pathlib import Path
-          from gradio_client import Client
+          from gradio_client import Client, handle_file
+          import trimesh
 
-          spaces = [
-              'stabilityai/stable-fast-3d',
-              'tencent/Hunyuan3D-2',
-          ]
-          result = {}
-          for space in spaces:
-              try:
-                  client = Client(space, verbose=False)
-                  try:
-                      api = client.view_api(return_format='dict', print_info=False)
-                  except TypeError:
-                      api = client.view_api(return_format='dict')
-                  result[space] = {'ok': True, 'api': api}
-              except Exception as exc:
-                  result[space] = {
-                      'ok': False,
-                      'error': f'{type(exc).__name__}: {exc}',
-                      'trace': traceback.format_exc(limit=3),
-                  }
-          out = Path('v11/public/character/free-space-api.json')
-          out.parent.mkdir(parents=True, exist_ok=True)
-          out.write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding='utf-8')
-          print(out.read_text(encoding='utf-8'))
-          if not any(v.get('ok') for v in result.values()):
-              raise SystemExit('No free public 3D Space API reachable')
+          ref = Path('v11/reference/bacgau-mature-reference.jpg')
+          out_dir = Path('v11/public/character/candidates')
+          out_dir.mkdir(parents=True, exist_ok=True)
+          evidence = {'provider':'stabilityai/stable-fast-3d','reference':str(ref),'ok':False}
+
+          def find_glb(value):
+              if isinstance(value, str) and value.lower().endswith('.glb') and Path(value).exists():
+                  return Path(value)
+              if isinstance(value, dict):
+                  for key in ('path','value','name'):
+                      p = value.get(key)
+                      if isinstance(p, str) and p.lower().endswith('.glb') and Path(p).exists():
+                          return Path(p)
+                  for v in value.values():
+                      r = find_glb(v)
+                      if r: return r
+              if isinstance(value, (list, tuple)):
+                  for v in value:
+                      r = find_glb(v)
+                      if r: return r
+              return None
+
+          try:
+              client = Client('stabilityai/stable-fast-3d', verbose=False)
+              img = handle_file(str(ref))
+
+              # First let the Space create its background-removed conditioning state.
+              prep = client.predict(img, 0.85, api_name='/requires_bg_remove')
+              evidence['prep_type'] = type(prep).__name__
+              evidence['prep_repr'] = repr(prep)[:3000]
+
+              bg_state = None
+              if isinstance(prep, (list, tuple)):
+                  # The endpoint outputs: run button, image-processing state,
+                  # background-removal state, preview, model, HDR row.
+                  if len(prep) > 2:
+                      bg_state = prep[2]
+              if isinstance(bg_state, dict) and 'path' in bg_state:
+                  bg_state = bg_state['path']
+              if bg_state is None:
+                  raise RuntimeError('Space did not return a usable background-removal state')
+
+              generated = client.predict(
+                  'Run', img, bg_state, 0.85, 'None', -1, 1024,
+                  api_name='/run_button'
+              )
+              evidence['run_repr'] = repr(generated)[:3000]
+              glb = find_glb(generated)
+              if not glb:
+                  raise RuntimeError('Stable Fast 3D returned no downloadable GLB')
+
+              candidate = out_dir / 'stable-fast-3d.glb'
+              shutil.copy2(glb, candidate)
+
+              scene = trimesh.load(candidate, force='scene')
+              meshes = [g for g in scene.geometry.values() if hasattr(g, 'vertices')]
+              vertices = sum(len(m.vertices) for m in meshes)
+              faces = sum(len(m.faces) for m in meshes if hasattr(m, 'faces'))
+              bounds = scene.bounds.tolist() if scene.bounds is not None else None
+              extents = scene.extents.tolist() if scene.extents is not None else None
+              byte_size = candidate.stat().st_size
+              integrity = bool(meshes and vertices >= 1000 and faces >= 1000 and byte_size >= 100000)
+              evidence.update({
+                  'candidate':str(candidate),
+                  'bytes':byte_size,
+                  'mesh_count':len(meshes),
+                  'vertices':vertices,
+                  'faces':faces,
+                  'bounds':bounds,
+                  'extents':extents,
+                  'integrity_pass':integrity,
+              })
+              if not integrity:
+                  raise RuntimeError('Candidate failed basic mesh-integrity gate')
+
+              # Promote only to the runtime candidate slot; browser/render CI remains
+              # the authoritative visual gate before any parent-review link is published.
+              shutil.copy2(candidate, 'v11/public/character/bac-gau.glb')
+              evidence['ok'] = True
+          except Exception as exc:
+              evidence['error'] = f'{type(exc).__name__}: {exc}'
+              evidence['trace'] = traceback.format_exc(limit=8)
+
+          evidence_path = Path('v11/public/character/free-3d-candidate.json')
+          evidence_path.write_text(json.dumps(evidence, ensure_ascii=False, indent=2), encoding='utf-8')
+          print(evidence_path.read_text(encoding='utf-8'))
+          if not evidence['ok']:
+              raise SystemExit(1)
           PY
-      - name: Persist probe evidence
+      - name: Persist candidate and evidence
+        if: success()
         run: |
           git config user.name github-actions
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add v11/public/character/free-space-api.json
-          git commit -m 'test(v11): record free 3D Space API probe [skip ci]' || exit 0
+          git add v11/public/character/candidates/stable-fast-3d.glb \
+                  v11/public/character/bac-gau.glb \
+                  v11/public/character/free-3d-candidate.json
+          git commit -m 'feat(v11): add free Stable Fast 3D candidate for rendered validation [skip forge]' || exit 0
           git pull --rebase origin v11-rigged-character
           git push origin HEAD:v11-rigged-character
+      - name: Preserve failure evidence locally
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v11-free-3d-failure-${{ github.sha }}
+          path: v11/public/character/free-3d-candidate.json
+          if-no-files-found: warn
+          retention-days: 14
