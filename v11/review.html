@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Bác Gấu V11 — Interim Mature Preview</title>
+  <link rel="stylesheet" href="./src/styles.css" />
+  <style>
+    .review-note{position:fixed;z-index:50;left:12px;top:12px;max-width:min(520px,calc(100vw - 24px));padding:9px 12px;border-radius:12px;background:rgba(25,20,17,.86);color:#fff6e7;font:600 12px/1.35 system-ui,-apple-system,sans-serif;backdrop-filter:blur(10px);box-shadow:0 6px 24px rgba(0,0,0,.18)}
+    .review-note b{color:#ffd98e}.review-note span{opacity:.78;font-weight:500}
+  </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div class="review-note"><b>INTERIM V11 MATURE PREVIEW</b><br><span>Đây là authored fallback để review tỷ lệ mặt, mắt, mõm, ánh sáng và motion. Chưa phải mesh GLB miễn phí cuối cùng.</span></div>
+  <div id="app"></div>
+  <script type="module">
+    const base = new URL('./', location.href);
+    let source = await fetch(new URL('./src/main.js', base), {cache:'no-store'}).then(r => {
+      if(!r.ok) throw new Error(`main.js HTTP ${r.status}`);
+      return r.text();
+    });
+    source = source.replace("import './styles.css';\n", '');
+    const modules = ['character-runtime.js','procedural-bear-runtime.js','motion-controller.js','lip-sync.js','visual-tuning.js'];
+    for (const name of modules) {
+      const relative = `./${name}`;
+      const absolute = new URL(`./src/${name}`, base).href;
+      source = source.split(`'${relative}'`).join(JSON.stringify(absolute));
+    }
+    const modelUrl = new URL('./public/character/bac-gau.glb', base).href;
+    source = source.replace("const MODEL_URL='/character/bac-gau.glb';", `const MODEL_URL=${JSON.stringify(modelUrl)};`);
+    source = source.replaceAll('V11 · CHARACTER FORGE','V11 · INTERIM MATURE PREVIEW');
+    source = source.replace('VISUAL GATE: mature authored silhouette · soulful eyes · modular face/body controls · audio-driven jaw · GLB hot-swap ready.','INTERIM ONLY: mature authored fallback · review face / gaze / proportions / motion · free GLB candidate pending.');
+    const blob = URL.createObjectURL(new Blob([source], {type:'text/javascript'}));
+    try { await import(blob); }
+    catch (error) {
+      console.error(error);
+      document.querySelector('#app').innerHTML = `<pre style="white-space:pre-wrap;padding:24px;color:#fff;background:#241c18;min-height:100vh">Preview boot failed\n${String(error?.stack||error)}</pre>`;
+    }
+  </script>
+</body>
+</html>
