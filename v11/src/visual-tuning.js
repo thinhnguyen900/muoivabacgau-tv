@@ -13,31 +13,53 @@ function softenMaterial(material){
 
 function tuneEye(eyeCtl,side){
   if(!eyeCtl)return;
-  eyeCtl.position.x=side*.374;
-  eyeCtl.position.y=.268;
+  eyeCtl.position.x=side*.365;
+  eyeCtl.position.y=.274;
   eyeCtl.position.z=.790;
-  eyeCtl.rotation.z=side*-.012;
+  eyeCtl.rotation.z=side*-.009;
   const [sclera,iris,pupil,catchlight,upperRim,lowerRim,lowerLid,lid]=eyeCtl.children;
   if(sclera){
-    sclera.scale.set(.735,.515,.246);
+    // Keep a calm almond-shaped sclera that actually contains the iris.
+    // Previous tuning made the iris vertically larger than the sclera,
+    // which could read as doll-like or clipped at normal portrait distance.
+    sclera.scale.set(.92,.72,.252);
     softenMaterial(sclera.material);
   }
   if(iris){
-    iris.scale.set(1.12,1.02,.94);
-    iris.position.set(side*-.006,-.004,.183);
+    iris.scale.set(.88,.84,.93);
+    iris.position.set(side*-.004,-.008,.183);
   }
   if(pupil){
-    pupil.scale.set(1.14,1.07,.94);
-    pupil.position.set(side*-.006,-.006,.251);
+    pupil.scale.set(.92,.92,.94);
+    pupil.position.set(side*-.004,-.010,.251);
   }
   if(catchlight){
-    catchlight.scale.set(.72,.72,.72);
-    catchlight.position.set(-.022,.030,.304);
+    catchlight.scale.set(.80,.80,.80);
+    catchlight.position.set(-.020,.027,.304);
   }
-  if(upperRim){upperRim.scale.set(.94,.74,.96);upperRim.position.y=.030;upperRim.position.z=.238;}
-  if(lowerRim){lowerRim.scale.set(.92,.70,.94);lowerRim.position.y=-.088;lowerRim.position.z=.232;}
-  if(lowerLid){lowerLid.position.y=-.143;lowerLid.scale.set(.90,.072,.96);}
-  if(lid){lid.position.y=.108;lid.scale.set(.91,.102,.97);lid.userData.baseY=.108;}
+  if(upperRim){upperRim.scale.set(.91,.66,.94);upperRim.position.y=.026;upperRim.position.z=.238;}
+  if(lowerRim){lowerRim.scale.set(.88,.62,.92);lowerRim.position.y=-.083;lowerRim.position.z=.232;}
+  if(lowerLid){lowerLid.position.y=-.139;lowerLid.scale.set(.88,.064,.94);}
+  if(lid){lid.position.y=.102;lid.scale.set(.89,.092,.95);lid.userData.baseY=.102;}
+}
+
+function softenEyeSocket(head,index){
+  const socket=head?.children?.[index];
+  if(!socket?.isMesh)return;
+  // The authored fallback used a large dark oval behind each eye. It read as
+  // a hard mask in portrait framing. Turn it into a subtle warm eyelid/socket
+  // shadow so the gaze stays soulful rather than raccoon-like.
+  socket.scale.set(.82,.54,.12);
+  socket.position.y=.262;
+  socket.position.z=.700;
+  if(socket.material){
+    socket.material=socket.material.clone();
+    socket.material.color.setHex(0x5f4537);
+    socket.material.roughness=.98;
+    if('sheen' in socket.material)socket.material.sheen=.18;
+    if('clearcoat' in socket.material)socket.material.clearcoat=.005;
+    socket.material.needsUpdate=true;
+  }
 }
 
 export function tuneAuthoredBear(character){
@@ -67,6 +89,9 @@ export function tuneAuthoredBear(character){
       cheek.position.y=-.245;
       cheek.position.z=.500;
     }
+    // Stable authored-fallback child order: left socket=8, right socket=11.
+    softenEyeSocket(head,8);
+    softenEyeSocket(head,11);
   }
 
   tuneEye(character.controls.get('eyeLeft'),-1);
@@ -75,10 +100,10 @@ export function tuneAuthoredBear(character){
   for(const key of ['browL','browR']){
     const item=character.morph?.[key];
     if(item?.brow){
-      item.brow.position.y=.526;
+      item.brow.position.y=.522;
       item.brow.position.z=.778;
-      item.brow.scale.set(.88,.72,.88);
-      item.baseY=.526;
+      item.brow.scale.set(.84,.68,.86);
+      item.baseY=.522;
     }
   }
 
@@ -122,7 +147,7 @@ export function tuneAuthoredBear(character){
 
   return {
     applied:true,
-    visual:'mature-v6-soft-almond-eyes-integrated-cheeks-muzzle',
-    notes:['reduced visible sclera','larger warmer iris/pupil','lower softer brows','integrated side cheeks','shorter flatter muzzle and nose','narrower relaxed shoulders']
+    visual:'mature-v7-contained-almond-eyes-soft-sockets',
+    notes:['iris contained inside calm almond sclera','slightly closer relaxed gaze','soft warm eye sockets instead of dark mask','lighter eyelid rims','lower softer brows','integrated side cheeks','shorter flatter muzzle and nose','narrower relaxed shoulders']
   };
 }
