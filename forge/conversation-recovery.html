@@ -3,15 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Bác Gấu</title>
+  <title>Bác Gấu · Conversation First</title>
   <style>
     html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#100e0b;font-family:system-ui,-apple-system,sans-serif}
-    #bodyFrame{position:fixed;inset:0;width:100%;height:100%;border:0;background:#100e0b}
+    #bodyFrame{position:fixed;inset:0;width:100%;height:100%;border:0;background:#8ea99f}
     .talkbar{position:fixed;z-index:20;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;gap:10px;align-items:center;background:#17110ddd;border:1px solid #ffffff22;backdrop-filter:blur(16px);padding:10px;border-radius:999px;box-shadow:0 12px 35px #0007}
     #mic{width:74px;height:74px;border:0;border-radius:50%;background:#e0b568;font-size:31px;box-shadow:0 8px 26px #0007;touch-action:manipulation}
     #mic[data-live="1"]{transform:scale(1.06);background:#e4836f}
     #status{color:#fff;min-width:130px;max-width:46vw;font-size:14px;line-height:1.25;padding-right:10px}
-    #debug{position:fixed;z-index:20;right:12px;top:max(12px,env(safe-area-inset-top));display:flex;gap:6px;opacity:.18;transition:.2s}
+    #debug{position:fixed;z-index:20;right:12px;top:max(12px,env(safe-area-inset-top));display:flex;gap:6px;opacity:.16;transition:.2s}
     #debug:focus-within,#debug:hover{opacity:1}
     #debug input{width:210px;max-width:46vw;border:0;border-radius:12px;padding:10px;background:#fff;color:#222}
     #debug button{border:0;border-radius:12px;padding:10px;background:#e8d7b8;font-weight:700}
@@ -27,41 +27,83 @@
   <div id="debug"><input id="typed" placeholder="Gõ câu test…"><button id="send">Gửi</button></div>
   <script src="./conversation-bridge.js"></script>
   <script>
-    const frame=document.getElementById('bodyFrame'),mic=document.getElementById('mic'),statusEl=document.getElementById('status');
-    let bubble=null,badge=null;
-    function setText(t){ if(bubble) bubble.textContent=t; }
-    function setStatus(t){ statusEl.textContent=t; }
+    const frame=document.getElementById('bodyFrame');
+    const mic=document.getElementById('mic');
+    const statusEl=document.getElementById('status');
+    let lastEmotion='welcoming';
+
+    function setStatus(t){statusEl.textContent=t}
+    function sendBody(data){
+      try{frame.contentWindow.postMessage(Object.assign({type:'bacgau-state'},data),'*')}catch(e){console.warn('body state bridge',e)}
+    }
+
     frame.addEventListener('load',()=>{
-      try{
-        const d=frame.contentDocument;
-        const app=d.querySelector('.app'),stage=d.querySelector('.stage'),side=d.querySelector('.side');
-        if(side) side.style.display='none';
-        if(app){app.style.gridTemplateColumns='1fr';app.style.padding='0';app.style.gap='0'}
-        if(stage){stage.style.minHeight='100vh';stage.style.borderRadius='0'}
-        bubble=d.querySelector('#bubble'); badge=d.querySelector('.badge');
-        if(badge) badge.textContent='Bác Gấu';
-        setText('Bác ở đây nè. Muối muốn kể gì cho bác nghe?');
-      }catch(e){console.warn('body frame skin failed',e)}
+      sendBody({phase:'idle',emotion:'welcoming',text:'Bác ở đây nè. Muối muốn kể gì cho bác nghe?'});
     });
+    window.addEventListener('message',e=>{
+      if(e.data&&e.data.type==='bacgau-body-ready'){
+        setStatus('Bác đang nghe Muối');
+        sendBody({phase:'idle',emotion:'welcoming'});
+      }
+    });
+
     mic.addEventListener('click',async()=>{
       try{
-        if(BacGauConversation.recording){BacGauConversation.stopRecording();mic.dataset.live='0';setStatus('Bác đang nghe lại…');return}
-        await BacGauConversation.startRecording();mic.dataset.live='1';setStatus('Đang nghe… chạm lần nữa khi nói xong');
-      }catch(e){mic.dataset.live='0';setStatus('Không mở được mic: '+e.message)}
+        if(BacGauConversation.recording){
+          BacGauConversation.stopRecording();
+          mic.dataset.live='0';
+          setStatus('Bác đang nghe lại…');
+          sendBody({phase:'listening',emotion:'gentle'});
+          return;
+        }
+        await BacGauConversation.startRecording();
+        mic.dataset.live='1';
+        setStatus('Đang nghe… chạm lần nữa khi nói xong');
+        sendBody({phase:'listening',emotion:'gentle'});
+      }catch(e){
+        mic.dataset.live='0';
+        setStatus('Không mở được mic: '+e.message);
+        sendBody({phase:'idle',emotion:'gentle'});
+      }
     });
-    window.addEventListener('bacgau:recording-stop',()=>{mic.dataset.live='0'});
-    window.addEventListener('bacgau:heard',e=>{setText('Muối: '+e.detail.text);setStatus('Bác đang nghĩ…')});
-    window.addEventListener('bacgau:reply',e=>{setText(e.detail.text);setStatus('Bác đang trả lời…');if(badge)badge.textContent='Bác Gấu · '+e.detail.emotion});
+
+    window.addEventListener('bacgau:recording-start',()=>sendBody({phase:'listening',emotion:'gentle'}));
+    window.addEventListener('bacgau:recording-stop',()=>{mic.dataset.live='0';sendBody({phase:'listening',emotion:'gentle'})});
+    window.addEventListener('bacgau:heard',e=>{
+      setStatus('Bác đang nghĩ…');
+      sendBody({phase:'thinking',emotion:'thinking',text:'Muối: '+e.detail.text});
+    });
+    window.addEventListener('bacgau:reply',e=>{
+      lastEmotion=e.detail.emotion||'welcoming';
+      setStatus('Bác đang trả lời…');
+      sendBody({phase:'synthesizing',emotion:lastEmotion,text:e.detail.text});
+    });
+    window.addEventListener('bacgau:speech-start',e=>{
+      lastEmotion=e.detail.emotion||lastEmotion;
+      sendBody({phase:'speaking',emotion:lastEmotion,speaking:true,text:e.detail.reply||''});
+    });
+    window.addEventListener('bacgau:speech-progress',e=>{
+      const d=e.detail.duration||0;
+      const progress=d?Math.min(1,e.detail.currentTime/d):0;
+      const pulse=.22+.28*Math.abs(Math.sin(progress*Math.PI*14));
+      sendBody({phase:'speaking',emotion:e.detail.emotion||lastEmotion,speaking:true,level:pulse});
+    });
+    window.addEventListener('bacgau:speech-end',()=>sendBody({phase:'idle',emotion:'welcoming',speaking:false,level:0}));
+
     window.addEventListener('bacgau:conversation',e=>{
       const p=e.detail.phase;
-      if(p==='transcribing')setStatus('Bác đang nghe lại…');
-      if(p==='thinking')setStatus('Bác đang nghĩ…');
-      if(p==='synthesizing')setStatus('Bác chuẩn bị nói…');
-      if(p==='speaking')setStatus('Bác đang nói…');
-      if(p==='idle')setStatus('Bác đang nghe Muối');
-      if(p==='error')setStatus('Có lỗi: '+(e.detail.error||'thử lại nhé'));
+      if(p==='transcribing'){setStatus('Bác đang nghe lại…');sendBody({phase:'listening',emotion:'gentle'})}
+      if(p==='thinking'){setStatus('Bác đang nghĩ…');sendBody({phase:'thinking',emotion:'thinking'})}
+      if(p==='synthesizing'){setStatus('Bác chuẩn bị nói…');sendBody({phase:'synthesizing',emotion:lastEmotion})}
+      if(p==='speaking'){setStatus('Bác đang nói…');sendBody({phase:'speaking',emotion:lastEmotion,speaking:true})}
+      if(p==='idle'){setStatus('Bác đang nghe Muối');sendBody({phase:'idle',emotion:'welcoming',speaking:false,level:0})}
+      if(p==='error'){setStatus('Có lỗi: '+(e.detail.error||'thử lại nhé'));sendBody({phase:'idle',emotion:'gentle',speaking:false,level:0})}
     });
-    document.getElementById('send').onclick=async()=>{const el=document.getElementById('typed');const t=el.value.trim();if(!t)return;el.value='';try{await BacGauConversation.askText(t)}catch(e){setStatus('Có lỗi: '+e.message)}};
+
+    document.getElementById('send').onclick=async()=>{
+      const el=document.getElementById('typed');const t=el.value.trim();if(!t)return;el.value='';
+      try{await BacGauConversation.askText(t)}catch(e){setStatus('Có lỗi: '+e.message)}
+    };
     document.getElementById('typed').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('send').click()});
   </script>
 </body>
